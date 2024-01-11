@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +5,8 @@ import 'api.dart';
 import 'logged_in.dart'; // Import the HomePage widget
 
 class CombinedLoginScreen extends StatefulWidget {
+  const CombinedLoginScreen({super.key});
+
   @override
   _CombinedLoginScreenState createState() => _CombinedLoginScreenState();
 }
@@ -19,7 +20,7 @@ class _CombinedLoginScreenState extends State<CombinedLoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Register/Login'),
+        title: const Text('Register/Login'),
       ),
       body: Column(
         children: <Widget>[
@@ -29,7 +30,7 @@ class _CombinedLoginScreenState extends State<CombinedLoginScreen> {
               children: <Widget>[
                 TextFormField(
                   controller: _usernameController,
-                  decoration: InputDecoration(labelText: 'Username'),
+                  decoration: const InputDecoration(labelText: 'Username'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your username';
@@ -39,7 +40,7 @@ class _CombinedLoginScreenState extends State<CombinedLoginScreen> {
                 ),
                 TextFormField(
                   controller: _passwordController,
-                  decoration: InputDecoration(labelText: 'Password'),
+                  decoration: const InputDecoration(labelText: 'Password'),
                   obscureText: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -55,14 +56,14 @@ class _CombinedLoginScreenState extends State<CombinedLoginScreen> {
                         await ApiService().createUser(
                             _usernameController.text, _passwordController.text);
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
+                          const SnackBar(
                             content: Text('User created successfully'),
                             backgroundColor: Colors.green, // success color
                           ),
                         );
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => HomePage()),
+                          MaterialPageRoute(builder: (context) => const HomePage()),
                         );
                       } catch (e) {
                         if (e is DioError) {
@@ -76,7 +77,7 @@ class _CombinedLoginScreenState extends State<CombinedLoginScreen> {
                       }
                     }
                   },
-                  child: Text('Register'),
+                  child: const Text('Register'),
                 ),
                 ElevatedButton(
                   onPressed: () async {
@@ -85,14 +86,14 @@ class _CombinedLoginScreenState extends State<CombinedLoginScreen> {
                         await ApiService().loginUser(
                             _usernameController.text, _passwordController.text);
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
+                          const SnackBar(
                             content: Text('User logged in successfully'),
                             backgroundColor: Colors.green, // success color
                           ),
                         );
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => HomePage()),
+                          MaterialPageRoute(builder: (context) => const HomePage()),
                         );
                       } catch (e) {
                         if (e is DioError) {
@@ -107,7 +108,7 @@ class _CombinedLoginScreenState extends State<CombinedLoginScreen> {
                       }
                     }
                   },
-                  child: Text('Login'),
+                  child: const Text('Login'),
                 )
               ],
             ),

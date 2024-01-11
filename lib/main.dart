@@ -11,13 +11,15 @@ void main() {
 class MyApp extends StatelessWidget {
   final _apiService = ApiService();
 
+  MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<bool>(
       future: _apiService.checkCookie(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return const CircularProgressIndicator();
         } else {
           if (snapshot.data == true) {
             return MaterialApp(
@@ -26,7 +28,7 @@ class MyApp extends StatelessWidget {
               darkTheme: ThemeData(
                 brightness: Brightness.dark,
               ),
-              home: HomePage(),
+              home: const HomePage(),
             );
           } else {
             return MaterialApp(
@@ -35,7 +37,7 @@ class MyApp extends StatelessWidget {
               darkTheme: ThemeData(
                 brightness: Brightness.dark,
               ),
-              home: CombinedLoginScreen(),
+              home: const CombinedLoginScreen(),
             );
           }
         }

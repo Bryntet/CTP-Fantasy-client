@@ -5,6 +5,8 @@ import 'api.dart';
 import 'api-classes.dart';
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -32,7 +34,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Fantasy Tournaments'),
+          title: const Text('Fantasy Tournaments'),
           actions: <Widget>[
             IconButton(
               icon: const Icon(Icons.logout),
@@ -41,7 +43,7 @@ class _HomePageState extends State<HomePage> {
                 Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => CombinedLoginScreen()));
+                        builder: (context) => const CombinedLoginScreen()));
                 const SnackBar(
                   content: Text('Logged out successfully'),
                   backgroundColor: Colors.greenAccent, // success color
@@ -54,7 +56,7 @@ class _HomePageState extends State<HomePage> {
         body: Column(
           children: [
             CheckboxListTile(
-              title: Text("Show Declined"),
+              title: const Text("Show Declined"),
               value: _showDeclined,
               onChanged: (bool? value) {
                 setState(() {
@@ -67,10 +69,10 @@ class _HomePageState extends State<HomePage> {
                 future: _futureTournaments,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
+                    return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
                     print(snapshot.error);
-                    return Center(child: Text('Error: :('));
+                    return const Center(child: Text('Error: :('));
                   } else {
                     return ListView.builder(
                       itemCount: snapshot.data!.length,
@@ -91,7 +93,7 @@ class _HomePageState extends State<HomePage> {
                                   : Colors.green,
                           title: Text(tournament.name),
                           trailing: tournament.userIsOwner
-                              ? Icon(Icons.check_circle, color: Colors.yellow)
+                              ? const Icon(Icons.check_circle, color: Colors.yellow)
                               : null,
                           onTap: () {
                             if (tournament.invitationStatus !=
@@ -102,12 +104,12 @@ class _HomePageState extends State<HomePage> {
                                   context: context,
                                   builder: (context) {
                                     return AlertDialog(
-                                      title: Text('Invitation'),
-                                      content: Text(
+                                      title: const Text('Invitation'),
+                                      content: const Text(
                                           'Do you want to accept the invitation?'),
                                       actions: <Widget>[
                                         TextButton(
-                                          child: Text('Accept',
+                                          child: const Text('Accept',
                                               style: TextStyle(
                                                   color: Colors.green)),
                                           onPressed: () async {
@@ -128,7 +130,7 @@ class _HomePageState extends State<HomePage> {
                                           },
                                         ),
                                         TextButton(
-                                          child: Text('Decline',
+                                          child: const Text('Decline',
                                               style:
                                                   TextStyle(color: Colors.red)),
                                           onPressed: () async {
@@ -173,10 +175,10 @@ class _HomePageState extends State<HomePage> {
                 _futureTournaments = _fetchTournaments();
               });
             },
-            child: Icon(Icons.refresh),
-            heroTag: null, // Required to use multiple FloatingActionButtons
+            heroTag: null,
+            child: const Icon(Icons.refresh), // Required to use multiple FloatingActionButtons
           ),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           FloatingActionButton(
               onPressed: () {
                 showDialog(
@@ -217,7 +219,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       actions: <Widget>[
                         TextButton(
-                          child: Text('Create'),
+                          child: const Text('Create'),
                           onPressed: () async {
                             if (_formKey.currentState?.validate() == true) {
                               var tournament = FantasyTournamentInput(
@@ -243,8 +245,8 @@ class _HomePageState extends State<HomePage> {
                   },
                 );
               },
-              child: Icon(Icons.add),
-              heroTag: null),
+              heroTag: null,
+              child: const Icon(Icons.add)),
         ]));
   }
 }

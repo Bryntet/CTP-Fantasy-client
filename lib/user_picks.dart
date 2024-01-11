@@ -7,8 +7,8 @@ class UserPicksPage extends StatefulWidget {
   final int userId;
   final String username;
 
-  UserPicksPage(
-      {required this.tournament, required this.userId, required this.username});
+  const UserPicksPage(
+      {super.key, required this.tournament, required this.userId, required this.username});
 
   @override
   _UserPicksPageState createState() => _UserPicksPageState();
@@ -54,7 +54,7 @@ class _UserPicksPageState extends State<UserPicksPage> {
           } else if (snapshot.hasError) {
             return Text("${snapshot.error}");
           }
-          return CircularProgressIndicator();
+          return const CircularProgressIndicator();
         },
       ),
     );

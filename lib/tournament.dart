@@ -7,7 +7,7 @@ import 'api.dart';
 class TournamentDetailsPage extends StatefulWidget {
   final FantasyTournament tournament;
 
-  TournamentDetailsPage({required this.tournament});
+  const TournamentDetailsPage({super.key, required this.tournament});
 
   @override
   _TournamentDetailsPageState createState() => _TournamentDetailsPageState();
@@ -60,7 +60,7 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
           } else if (snapshot.hasError) {
             return Text("${snapshot.error}");
           }
-          return CircularProgressIndicator();
+          return const CircularProgressIndicator();
         },
       ),
       floatingActionButton: widget.tournament.userIsOwner
@@ -70,12 +70,12 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
                   context: context,
                   builder: (context) {
                     return AlertDialog(
-                      title: Text('Invite User'),
+                      title: const Text('Invite User'),
                       content: Form(
                         key: _formKey,
                         child: TextFormField(
                           controller: _userIdController,
-                          decoration: InputDecoration(labelText: 'Username'),
+                          decoration: const InputDecoration(labelText: 'Username'),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter the username';
@@ -86,7 +86,7 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
                       ),
                       actions: <Widget>[
                         TextButton(
-                          child: Text('Invite'),
+                          child: const Text('Invite'),
                           onPressed: () async {
                             if (_formKey.currentState?.validate() == true) {
                               try {
@@ -94,7 +94,7 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
                                     widget.tournament.id,
                                     _userIdController.text);
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
+                                  const SnackBar(
                                     content: Text('User invited successfully!'),
                                     backgroundColor: Colors.green,
                                   ),
@@ -119,8 +119,8 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
                   },
                 );
               },
-              child: Icon(Icons.add),
               tooltip: 'Invite User',
+              child: const Icon(Icons.add),
             )
           : null,
     );
