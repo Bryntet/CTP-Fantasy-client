@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:cookie_jar/cookie_jar.dart';
@@ -7,14 +8,25 @@ import 'api-classes.dart';
 class ApiService {
   static final ApiService _instance = ApiService._internal();
   final Dio _dio;
-  var url = "http://127.0.0.1:8000/api";
+  final url = "http://127.0.0.1:8000/api";
+
+  List<Cookie> cookies = [];
 
   factory ApiService() {
     return _instance;
   }
 
   ApiService._internal()
-      : _dio = Dio()..interceptors.add(CookieManager(PersistCookieJar()));
+      : _dio = Dio()..interceptors.add(CookieManager(PersistCookieJar())) {
+    _loadCookies();
+  }
+
+  Future<void> _loadCookies() async {
+    var cookieJar = PersistCookieJar();
+    var uri = Uri.parse(url);
+    cookies = await cookieJar.loadForRequest(uri);
+    print('Cookies: $cookies');
+  }
 
   Future<String?> createUser(String username, String password) async {
     final response = await _dio.post(
@@ -95,6 +107,42 @@ class ApiService {
   Future<void> answerInvitation(int tournamentId, bool response) async {
     await _dio.post(
       '$url/fantasy-tournament/$tournamentId/answer-invite/$response',
+    );
+  }
+
+  Future<void> pickPlayer(int tournamentId, int slot, int pdgaNumber) async {
+    await _dio.put(
+      '$url/fantasy-tournament/$tournamentId/pick/$slot/player/$pdgaNumber',
+    );
+  }
+
+  Future<SimpleFantasyPicks> getUserPicks(int tournamentId, int userId) async {
+    final response = await _dio.get(
+      '$url/fantasy-tournament/$tournamentId/user_picks/$userId',
+    );
+
+    return SimpleFantasyPicks.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<bool> checkCookie() async {
+    try {
+      final response = await _dio.get('$url/check-cookie');
+      return response.statusCode == 200;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
+  Future<void> logout() async {
+    await _dio.post(
+      '$url/logout',
+    );
+  }
+
+  Future<void> logoutAll() async {
+    await _dio.post(
+      '$url/logout-all',
     );
   }
 }

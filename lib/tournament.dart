@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:rusty_chains/user_picks.dart';
 import 'api-classes.dart';
 import 'api.dart';
 
@@ -40,9 +41,20 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
               itemCount: participants.length,
               itemBuilder: (context, index) {
                 return ListTile(
-                  title: Text(participants[index].name),
-                  subtitle: Text('Score: ${participants[index].score}'),
-                );
+                    title: Text(participants[index].name),
+                    subtitle: Text('Score: ${participants[index].score}'),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => UserPicksPage(
+                            tournament: widget.tournament,
+                            userId: participants[index].id,
+                            username: participants[index].name,
+                          ),
+                        ),
+                      );
+                    });
               },
             );
           } else if (snapshot.hasError) {

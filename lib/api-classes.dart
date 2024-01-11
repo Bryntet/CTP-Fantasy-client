@@ -56,3 +56,42 @@ class Participant {
     );
   }
 }
+
+class SimpleFantasyPick {
+  final int slot;
+  final int pdgaNumber;
+  final String name;
+
+  SimpleFantasyPick(
+      {required this.slot, required this.pdgaNumber, required this.name});
+
+  factory SimpleFantasyPick.fromJson(Map<String, dynamic> json) {
+    return SimpleFantasyPick(
+        slot: json['slot'] as int,
+        pdgaNumber: json['pdga_number'] as int,
+        name: json['name']);
+  }
+}
+
+class SimpleFantasyPicks {
+  final List<SimpleFantasyPick> picks;
+  final bool owner;
+  final int fantasyTournamentId;
+
+  SimpleFantasyPicks({
+    required this.picks,
+    required this.owner,
+    required this.fantasyTournamentId,
+  });
+
+  factory SimpleFantasyPicks.fromJson(Map<String, dynamic> json) {
+    return SimpleFantasyPicks(
+      picks: (json['picks'] as List<dynamic>)
+          .map((item) =>
+              SimpleFantasyPick.fromJson(item as Map<String, dynamic>))
+          .toList(),
+      owner: json['owner'] as bool,
+      fantasyTournamentId: json['fantasy_tournament_id'] as int,
+    );
+  }
+}
