@@ -1,11 +1,10 @@
-
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+
 import 'api.dart';
 import 'logged_in.dart'; // Import the HomePage widget
 
 class CombinedLoginScreen extends StatefulWidget {
-  const CombinedLoginScreen({super.key});
+  const CombinedLoginScreen({Key? key}) : super(key: key);
 
   @override
   _CombinedLoginScreenState createState() => _CombinedLoginScreenState();
@@ -19,102 +18,123 @@ class _CombinedLoginScreenState extends State<CombinedLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: const Key('login_screen'),
       appBar: AppBar(
         title: const Text('Register/Login'),
       ),
-      body: Column(
-        children: <Widget>[
-          Form(
-            key: _sharedFormKey,
-            child: Column(
-              children: <Widget>[
-                TextFormField(
-                  controller: _usernameController,
-                  decoration: const InputDecoration(labelText: 'Username'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your username';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _passwordController,
-                  decoration: const InputDecoration(labelText: 'Password'),
-                  obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    return null;
-                  },
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (_sharedFormKey.currentState?.validate() == true) {
-                      try {
-                        await ApiService().createUser(
-                            _usernameController.text, _passwordController.text);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('User created successfully'),
-                            backgroundColor: Colors.green, // success color
-                          ),
-                        );
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const HomePage()),
-                        );
-                      } catch (e) {
-                        if (e is DioError) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(e.response?.data),
-                              backgroundColor: Colors.red, // error color
-                            ),
-                          );
-                        }
-                      }
-                    }
-                  },
-                  child: const Text('Register'),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (_sharedFormKey.currentState?.validate() == true) {
-                      try {
-                        await ApiService().loginUser(
-                            _usernameController.text, _passwordController.text);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('User logged in successfully'),
-                            backgroundColor: Colors.green, // success color
-                          ),
-                        );
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const HomePage()),
-                        );
-                      } catch (e) {
-                        if (e is DioError) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(e.response?.data ??
-                                  'An error occurred'), // Use a default string if e.response?.data is null
-                              backgroundColor: Colors.red, // error color
-                            ),
-                          );
-                        }
-                      }
-                    }
-                  },
-                  child: const Text('Login'),
-                )
-              ],
-            ),
-          ),
-        ],
+      body: buildLoginForm(),
+    );
+  }
+
+  Form buildLoginForm() {
+    return Form(
+      key: _sharedFormKey,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: <Widget>[
+            buildTextField(_usernameController, 'Username'),
+            const SizedBox(height: 16),
+            buildTextField(_passwordController, 'Password', obscureText: true),
+            const SizedBox(height: 16),
+            buildRegisterButton(),
+            const SizedBox(height: 16),
+            buildLoginButton(),
+          ],
+        ),
       ),
+    );
+  }
+
+  TextFormField buildTextField(TextEditingController controller, String label,
+      {bool obscureText = false}) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(labelText: label),
+      obscureText: obscureText,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter your $label';
+        }
+        return null;
+      },
+    );
+  }
+
+  ElevatedButton buildRegisterButton() {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        minimumSize: Size(200, 100), // Set the minimum size
+      ),
+      onPressed: () {
+        if (_sharedFormKey.currentState?.validate() == true) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return Container(
+                child: buildFutureBuilder(ApiService().createUser(
+                    _usernameController.text, _passwordController.text)),
+              );
+            },
+          );
+        }
+      },
+      child: const Text(
+        'Register',
+        style: TextStyle(fontSize: 20),
+      ),
+    );
+  }
+
+  ElevatedButton buildLoginButton() {
+    return ElevatedButton(
+      onPressed: () {
+        if (_sharedFormKey.currentState?.validate() == true) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return Container(
+                child: buildFutureBuilder(ApiService().loginUser(
+                    _usernameController.text, _passwordController.text)),
+              );
+            },
+          );
+        }
+      },
+      style: ElevatedButton.styleFrom(
+        minimumSize: const Size(200, 200), // Set the minimum size
+      ),
+      child: const Text('Login', style: TextStyle(fontSize: 20)),
+    );
+  }
+
+  FutureBuilder buildFutureBuilder(Future future) {
+    return FutureBuilder(
+      future: future,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          try {
+            throw Exception(snapshot.error);
+          } catch (e) {
+            //print(e);
+          }
+          return Container();
+        } else if (snapshot.data != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const TournamentsPage(),
+                  settings: const RouteSettings(name: '/tournaments')),
+            );
+          });
+        }
+        return Container();
+      },
     );
   }
 }

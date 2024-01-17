@@ -19,20 +19,20 @@ enum InvitationStatus { Pending, Accepted, Declined }
 class FantasyTournament {
   final int id;
   final String name;
-  final bool userIsOwner;
+  final int ownerUserId;
   final InvitationStatus invitationStatus;
 
   FantasyTournament(
       {required this.id,
       required this.name,
-      required this.userIsOwner,
+      required this.ownerUserId,
       required this.invitationStatus});
 
   factory FantasyTournament.fromJson(Map<String, dynamic> json) {
     return FantasyTournament(
       id: json['id'],
       name: json['name'],
-      userIsOwner: json["user_is_owner"],
+      ownerUserId: json["owner_id"],
       invitationStatus: InvitationStatus.values.firstWhere(
           (e) =>
               e.toString() == 'InvitationStatus.' + json['invitation_status'],
@@ -57,38 +57,48 @@ class Participant {
   }
 }
 
-class SimpleFantasyPick {
-  final int slot;
-  final int pdgaNumber;
-  final String name;
+class Pick {
+  int slot;
+  int pdgaNumber;
+  String name;
 
-  SimpleFantasyPick(
-      {required this.slot, required this.pdgaNumber, required this.name});
+  Pick({required this.slot, required this.pdgaNumber, required this.name});
 
-  factory SimpleFantasyPick.fromJson(Map<String, dynamic> json) {
-    return SimpleFantasyPick(
+  factory Pick.fromJson(Map<String, dynamic> json) {
+    return Pick(
         slot: json['slot'] as int,
         pdgaNumber: json['pdga_number'] as int,
         name: json['name']);
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'slot': slot,
+      'pdga_number': pdgaNumber,
+      'name': name,
+    };
+  }
+
+  static Pick empty(int slot) {
+    return Pick(slot: slot, pdgaNumber: slot, name: ' ' * slot);
+  }
 }
 
-class SimpleFantasyPicks {
-  final List<SimpleFantasyPick> picks;
+class Picks {
+  List<Pick> picks;
   final bool owner;
   final int fantasyTournamentId;
 
-  SimpleFantasyPicks({
+  Picks({
     required this.picks,
     required this.owner,
     required this.fantasyTournamentId,
   });
 
-  factory SimpleFantasyPicks.fromJson(Map<String, dynamic> json) {
-    return SimpleFantasyPicks(
+  factory Picks.fromJson(Map<String, dynamic> json) {
+    return Picks(
       picks: (json['picks'] as List<dynamic>)
-          .map((item) =>
-              SimpleFantasyPick.fromJson(item as Map<String, dynamic>))
+          .map((item) => Pick.fromJson(item as Map<String, dynamic>))
           .toList(),
       owner: json['owner'] as bool,
       fantasyTournamentId: json['fantasy_tournament_id'] as int,

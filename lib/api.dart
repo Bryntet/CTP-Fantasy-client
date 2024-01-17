@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
+
+import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
-import 'package:cookie_jar/cookie_jar.dart';
+import 'package:flutter/foundation.dart';
+
 import 'api-classes.dart';
 
 class ApiService {
@@ -17,24 +20,26 @@ class ApiService {
   }
 
   ApiService._internal()
-      : _dio = Dio()..interceptors.add(CookieManager(PersistCookieJar())) {
+      : _dio = Dio()
+          ..interceptors
+              .add(CookieManager(kIsWeb ? CookieJar() : PersistCookieJar())) {
     _loadCookies();
   }
 
   Future<void> _loadCookies() async {
-    var cookieJar = PersistCookieJar();
-    var uri = Uri.parse(url);
-    cookies = await cookieJar.loadForRequest(uri);
-    print('Cookies: $cookies');
+    if (!kIsWeb) {
+      var cookieJar = PersistCookieJar();
+      var uri = Uri.parse(url);
+      cookies = await cookieJar.loadForRequest(uri);
+      print('Cookies: $cookies');
+    }
   }
 
   Future<String?> createUser(String username, String password) async {
     final response = await _dio.post(
       '$url/create-user',
       options: Options(
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
+        contentType: Headers.jsonContentType,
       ),
       data: jsonEncode(<String, String>{
         'username': username,
@@ -48,9 +53,7 @@ class ApiService {
     final response = await _dio.post(
       '$url/login',
       options: Options(
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
+        contentType: Headers.jsonContentType,
       ),
       data: jsonEncode(<String, String>{
         'username': username,
@@ -60,7 +63,15 @@ class ApiService {
     return response.statusMessage;
   }
 
+  Future<FantasyTournament> getFantasyTournament(int id) async {
+    final response = await _dio.get(
+      '$url/fantasy-tournament/$id',
+    );
+    return FantasyTournament.fromJson(response.data as Map<String, dynamic>);
+  }
+
   Future<List<FantasyTournament>> getFantasyTournaments() async {
+    _loadCookies();
     final response = await _dio.get(
       '$url/my-tournaments',
     );
@@ -75,12 +86,8 @@ class ApiService {
   Future<void> createFantasyTournament(
       FantasyTournamentInput tournament) async {
     await _dio.post(
-      '$url/create-fantasy-tournament',
-      options: Options(
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-      ),
+      '$url/fantasy-tournament',
+      options: Options(contentType: Headers.jsonContentType),
       data: jsonEncode(tournament.toJson()),
     );
   }
@@ -95,6 +102,11 @@ class ApiService {
         .toList();
 
     return participants;
+  }
+
+  Future<int> getUserId() async {
+    final response = await _dio.get('$url/my-id');
+    return response.data;
   }
 
   Future<String?> inviteUser(int tournamentId, String username) async {
@@ -116,12 +128,12 @@ class ApiService {
     );
   }
 
-  Future<SimpleFantasyPicks> getUserPicks(int tournamentId, int userId) async {
+  Future<Picks> getUserPicks(int tournamentId, int userId) async {
     final response = await _dio.get(
       '$url/fantasy-tournament/$tournamentId/user_picks/$userId',
     );
 
-    return SimpleFantasyPicks.fromJson(response.data as Map<String, dynamic>);
+    return Picks.fromJson(response.data as Map<String, dynamic>);
   }
 
   Future<bool> checkCookie() async {
@@ -129,7 +141,6 @@ class ApiService {
       final response = await _dio.get('$url/check-cookie');
       return response.statusCode == 200;
     } catch (e) {
-      print(e);
       return false;
     }
   }
@@ -144,5 +155,20 @@ class ApiService {
     await _dio.post(
       '$url/logout-all',
     );
+  }
+
+  Future<void> addPicks(int tournamentId, List<Pick> picks) async {
+    await _dio.post(
+      '$url/fantasy-tournament/$tournamentId/pick',
+      options: Options(contentType: Headers.jsonContentType),
+      data: jsonEncode(picks),
+    );
+  }
+
+  Future<int> maxPicks(int tournamentId) async {
+    final response = await _dio.get(
+      '$url/fantasy-tournament/$tournamentId/max-picks',
+    );
+    return response.data;
   }
 }
