@@ -37,9 +37,11 @@ class _CombinedLoginScreenState extends State<CombinedLoginScreen> {
             const SizedBox(height: 16),
             buildTextField(_passwordController, 'Password', obscureText: true),
             const SizedBox(height: 16),
-            buildRegisterButton(),
-            const SizedBox(height: 16),
-            buildLoginButton(),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+              buildRegisterButton(),
+              const SizedBox(width: 16),
+              buildLoginButton()
+            ]),
           ],
         ),
       ),
@@ -63,9 +65,9 @@ class _CombinedLoginScreenState extends State<CombinedLoginScreen> {
 
   ElevatedButton buildRegisterButton() {
     return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        minimumSize: Size(200, 100), // Set the minimum size
-      ),
+      /*style: ElevatedButton.styleFrom(
+        minimumSize: const Size(500, 100), // Set the minimum size
+      ),*/
       onPressed: () {
         if (_sharedFormKey.currentState?.validate() == true) {
           showDialog(
@@ -103,9 +105,9 @@ class _CombinedLoginScreenState extends State<CombinedLoginScreen> {
           );
         }
       },
-      style: ElevatedButton.styleFrom(
-        minimumSize: const Size(200, 200), // Set the minimum size
-      ),
+      /*style: ElevatedButton.styleFrom(
+        minimumSize: const Size(500, 100), // Set the minimum size
+      ),*/
       child: const Text('Login', style: TextStyle(fontSize: 20)),
     );
   }

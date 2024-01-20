@@ -1,17 +1,18 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_prefs_cookie_store/shared_prefs_cookie_store.dart';
 
-import 'api-classes.dart';
+import 'api_classes.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
   final Dio _dio;
-  final url = "http://127.0.0.1:8000/api";
+  final url = "http://158.174.76.100:50123/api";
+  final SharedPrefCookieStore _cookieStore = SharedPrefCookieStore();
 
   List<Cookie> cookies = [];
 
@@ -19,16 +20,35 @@ class ApiService {
     return _instance;
   }
 
-  ApiService._internal()
-      : _dio = Dio()
-          ..interceptors
-              .add(CookieManager(kIsWeb ? CookieJar() : PersistCookieJar())) {
-    _loadCookies();
+  void init() {
+    _dio.interceptors.add(CookieManager(kIsWeb ? CookieJar() : _cookieStore));
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          print('Sending request to ${options.uri}');
+          return handler.next(options);
+        },
+        onResponse: (response, handler) {
+          print('Received response: $response');
+          return handler.next(response);
+        },
+        onError: (DioException error, handler) {
+          print(
+              'Error occurred: ${error.response?.statusCode}: ${error.response?.data}');
+          return handler.next(error);
+        },
+      ),
+    );
+  }
+
+  ApiService._internal() : _dio = Dio() {
+    init();
   }
 
   Future<void> _loadCookies() async {
     if (!kIsWeb) {
-      var cookieJar = PersistCookieJar();
+      //await requestStoragePermission();
+      var cookieJar = _cookieStore;
       var uri = Uri.parse(url);
       cookies = await cookieJar.loadForRequest(uri);
       print('Cookies: $cookies');
@@ -94,7 +114,7 @@ class ApiService {
 
   Future<List<Participant>> getFantasyTournamentParticipants(int id) async {
     final response = await _dio.get(
-      '$url/fantasy-tournament/$id/participants',
+      '$url/fantasy-tournament/$id/users',
     );
 
     List<Participant> participants = (response.data as List<dynamic>)
@@ -124,13 +144,20 @@ class ApiService {
 
   Future<void> pickPlayer(int tournamentId, int slot, int pdgaNumber) async {
     await _dio.put(
-      '$url/fantasy-tournament/$tournamentId/pick/$slot/player/$pdgaNumber',
+        '$url/fantasy-tournament/$tournamentId/user/${await getUserId()}/picks/$slot/$pdgaNumber');
+  }
+
+  Future<Pick> getPick(int tournamentId, int slot, int userId) async {
+    final response = await _dio.get(
+      '$url/fantasy-tournament/$tournamentId/user/$userId/picks/$slot',
     );
+
+    return Pick.fromJson(response.data as Map<String, dynamic>);
   }
 
   Future<Picks> getUserPicks(int tournamentId, int userId) async {
     final response = await _dio.get(
-      '$url/fantasy-tournament/$tournamentId/user_picks/$userId',
+      '$url/fantasy-tournament/$tournamentId/user/$userId/picks',
     );
 
     return Picks.fromJson(response.data as Map<String, dynamic>);
@@ -159,7 +186,7 @@ class ApiService {
 
   Future<void> addPicks(int tournamentId, List<Pick> picks) async {
     await _dio.post(
-      '$url/fantasy-tournament/$tournamentId/pick',
+      '$url/fantasy-tournament/$tournamentId/user/${await getUserId()}/picks',
       options: Options(contentType: Headers.jsonContentType),
       data: jsonEncode(picks),
     );

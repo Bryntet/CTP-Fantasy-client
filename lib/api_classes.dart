@@ -14,7 +14,7 @@ class FantasyTournamentInput {
   }
 }
 
-enum InvitationStatus { Pending, Accepted, Declined }
+enum InvitationStatus { pending, accepted, declined }
 
 class FantasyTournament {
   final int id;
@@ -35,7 +35,8 @@ class FantasyTournament {
       ownerUserId: json["owner_id"],
       invitationStatus: InvitationStatus.values.firstWhere(
           (e) =>
-              e.toString() == 'InvitationStatus.' + json['invitation_status'],
+              e.toString() ==
+              'InvitationStatus.${json['invitation_status'].toString().toLowerCase()}',
           orElse: () => throw Exception('Invalid invitation status')),
     );
   }

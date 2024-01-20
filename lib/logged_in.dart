@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:rusty_chains/home_page.dart';
 import 'package:rusty_chains/tournament.dart';
 
-import 'api-classes.dart';
 import 'api.dart';
+import 'api_classes.dart';
 
 class TournamentsPage extends StatefulWidget {
   const TournamentsPage({super.key});
@@ -55,6 +55,7 @@ class _TournamentsPageState extends State<TournamentsPage> {
                 );
                 await ApiService().logout();
               },
+              color: Colors.red,
             )
           ],
         ),
@@ -122,14 +123,14 @@ class _TournamentsPageState extends State<TournamentsPage> {
       itemCount: tournaments.length,
       itemBuilder: (context, index) {
         var tournament = tournaments[index];
-        if (tournament.invitationStatus == InvitationStatus.Declined &&
+        if (tournament.invitationStatus == InvitationStatus.declined &&
             !_showDeclined) {
           return Container(); // Return an empty container for declined tournaments when _showDeclined is false
         }
         return ListTile(
-          tileColor: tournament.invitationStatus == InvitationStatus.Accepted
+          tileColor: tournament.invitationStatus == InvitationStatus.accepted
               ? null
-              : tournament.invitationStatus == InvitationStatus.Declined
+              : tournament.invitationStatus == InvitationStatus.declined
                   ? Colors.red
                   : Colors.green,
           title: Text(tournament.name),
@@ -152,8 +153,8 @@ class _TournamentsPageState extends State<TournamentsPage> {
                 }),
           ),
           onTap: () {
-            if (tournament.invitationStatus != InvitationStatus.Declined) {
-              if (tournament.invitationStatus == InvitationStatus.Pending) {
+            if (tournament.invitationStatus != InvitationStatus.declined) {
+              if (tournament.invitationStatus == InvitationStatus.pending) {
                 showDialog(
                   context: context,
                   builder: (context) {
@@ -244,6 +245,7 @@ class _TournamentsPageState extends State<TournamentsPage> {
         TextButton(
           child: const Text('Accept', style: TextStyle(color: Colors.green)),
           onPressed: () async {
+            await ApiService().answerInvitation(tournament.id, true);
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -252,7 +254,6 @@ class _TournamentsPageState extends State<TournamentsPage> {
                 ),
               ),
             );
-            await ApiService().answerInvitation(tournament.id, true);
             setState(() {
               _futureTournaments = _fetchTournaments();
             });
@@ -261,8 +262,8 @@ class _TournamentsPageState extends State<TournamentsPage> {
         TextButton(
           child: const Text('Decline', style: TextStyle(color: Colors.red)),
           onPressed: () async {
-            await ApiService().answerInvitation(tournament.id, false);
             Navigator.pop(context);
+            await ApiService().answerInvitation(tournament.id, false);
             setState(() {
               _futureTournaments = ApiService().getFantasyTournaments();
             });

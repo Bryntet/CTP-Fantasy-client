@@ -2,8 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:rusty_chains/user_picks.dart';
 
-import 'api-classes.dart';
 import 'api.dart';
+import 'api_classes.dart';
 
 class TournamentDetailsPage extends StatefulWidget {
   final int id;
