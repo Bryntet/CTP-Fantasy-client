@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:multiselect/multiselect.dart';
 import 'package:rusty_chains/home_page.dart';
 import 'package:rusty_chains/tournament.dart';
 
@@ -18,8 +19,7 @@ class _TournamentsPageState extends State<TournamentsPage> {
   final _nameController = TextEditingController();
   final _maxPicksController = TextEditingController();
   bool _showDeclined = false;
-
-  final userId = ApiService().getUserId();
+  final _userId = ApiService().getUserId();
 
   @override
   void initState() {
@@ -107,7 +107,15 @@ class _TournamentsPageState extends State<TournamentsPage> {
       future: _futureTournaments,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            child: SizedBox(
+              width: 50,
+              height: 50,
+              child: CircularProgressIndicator(
+                strokeCap: StrokeCap.round,
+              ),
+            ),
+          );
         } else if (snapshot.hasError) {
           print(snapshot.error);
           return const Center(child: Text('Error: :('));
@@ -118,99 +126,131 @@ class _TournamentsPageState extends State<TournamentsPage> {
     );
   }
 
-  ListView buildTournamentsListView(List<FantasyTournament> tournaments) {
-    return ListView.builder(
-      itemCount: tournaments.length,
-      itemBuilder: (context, index) {
-        var tournament = tournaments[index];
-        if (tournament.invitationStatus == InvitationStatus.declined &&
-            !_showDeclined) {
-          return Container(); // Return an empty container for declined tournaments when _showDeclined is false
-        }
-        return ListTile(
-          tileColor: tournament.invitationStatus == InvitationStatus.accepted
-              ? null
-              : tournament.invitationStatus == InvitationStatus.declined
-                  ? Colors.red
-                  : Colors.green,
-          title: Text(tournament.name),
-          trailing: SizedBox(
-            width: 50, // Specify your width here
-            child: FutureBuilder<int>(
-                future: userId,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  }
-                  if (snapshot.hasError) {
-                    print(snapshot.error);
-                    return const Text('Error: :(');
-                  }
-                  if (snapshot.data == tournament.ownerUserId) {
-                    return const Icon(Icons.check_circle, color: Colors.yellow);
-                  }
-                  return Container();
-                }),
-          ),
-          onTap: () {
-            if (tournament.invitationStatus != InvitationStatus.declined) {
-              if (tournament.invitationStatus == InvitationStatus.pending) {
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return buildInvitationDialog(tournament);
-                  },
-                );
-              } else {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => TournamentDetailsPage(
-                      id: tournament.id,
-                    ),
-                    settings:
-                        RouteSettings(name: '/tournaments/${tournament.id}'),
-                  ),
-                );
+  FutureBuilder<int> buildTournamentsListView(
+      List<FantasyTournament> tournaments) {
+    return FutureBuilder<int>(
+      future: _userId,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } else if (snapshot.hasError) {
+          return const Center(
+            child: Text('Error fetching user ID'),
+          );
+        } else {
+          int userId = snapshot.data!;
+          return ListView.builder(
+            itemCount: tournaments.length,
+            itemBuilder: (context, index) {
+              var tournament = tournaments[index];
+              if (tournament.invitationStatus == InvitationStatus.declined &&
+                  !_showDeclined) {
+                return Container(); // Return an empty container for declined tournaments when _showDeclined is false
               }
-            }
-          },
-        );
+              return ListTile(
+                tileColor: tournament.invitationStatus ==
+                        InvitationStatus.accepted
+                    ? null
+                    : tournament.invitationStatus == InvitationStatus.declined
+                        ? Colors.red
+                        : Colors.green,
+                title: Text(tournament.name),
+                trailing: SizedBox(
+                  width: 50, // Specify your width here
+                  child: userId == tournament.ownerUserId
+                      ? const Icon(Icons.check_circle, color: Colors.yellow)
+                      : Container(),
+                ),
+                onTap: () {
+                  if (tournament.invitationStatus !=
+                      InvitationStatus.declined) {
+                    if (tournament.invitationStatus ==
+                        InvitationStatus.pending) {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return buildInvitationDialog(tournament);
+                        },
+                      );
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TournamentDetailsPage(
+                            id: tournament.id,
+                          ),
+                          settings: RouteSettings(
+                              name: '/tournament/${tournament.id}'),
+                        ),
+                      );
+                    }
+                  }
+                },
+              );
+            },
+          );
+        }
       },
     );
   }
 
   AlertDialog buildCreateTournamentDialog() {
+    List<Division> selectedDivisions = []; // List to store selected divisions
+
     return AlertDialog(
       title: const Text('Create Fantasy Tournament'),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          children: <Widget>[
-            TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Name'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a name';
-                }
-                return null;
-              },
+      content: StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+          return Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(labelText: 'Name'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a name';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: _maxPicksController,
+                  decoration:
+                      const InputDecoration(labelText: 'Max Picks Per User'),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value != null && int.tryParse(value) == null) {
+                      return 'Please enter a valid number';
+                    }
+                    return null;
+                  },
+                ),
+                DropDownMultiSelect(
+                  onChanged: (List<String> selected) {
+                    setState(() {
+                      selectedDivisions = selected
+                          .map((e) => Division.values.firstWhere((element) =>
+                              element.toString().split('.').last == e))
+                          .toList();
+                    });
+                  },
+                  options: Division.values
+                      .map((e) => e.toString().split('.').last)
+                      .toList(),
+                  selectedValues: selectedDivisions
+                      .map((e) => e.toString().split('.').last)
+                      .toList(),
+                  whenEmpty: 'Select Divisions',
+                ),
+              ],
             ),
-            TextFormField(
-              controller: _maxPicksController,
-              decoration:
-                  const InputDecoration(labelText: 'Max Picks Per User'),
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value != null && int.tryParse(value) == null) {
-                  return 'Please enter a valid number';
-                }
-                return null;
-              },
-            ),
-          ],
-        ),
+          );
+        },
       ),
       actions: <Widget>[
         TextButton(
@@ -220,16 +260,14 @@ class _TournamentsPageState extends State<TournamentsPage> {
               var tournament = FantasyTournamentInput(
                 name: _nameController.text,
                 maxPicksPerUser: int.tryParse(_maxPicksController.text),
+                divisions: selectedDivisions,
               );
               Navigator.of(context).pop();
 
               await ApiService().createFantasyTournament(tournament);
               setState(() {
-                _futureTournaments = ApiService()
-                    .getFantasyTournaments(); // Use ApiService().createFantasyTournament
+                _futureTournaments = ApiService().getFantasyTournaments();
               });
-
-              // Refresh the list of tournaments
             }
           },
         )

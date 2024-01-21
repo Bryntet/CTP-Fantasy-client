@@ -23,13 +23,21 @@ class _UserPicksPageState extends State<UserPicksPage> {
   List<Pick> picks = [];
   bool isOwner = false;
   late Future<int> maxPicks;
+  late Future<List<Division>> divisions;
+  Division selectedDivision = Division.MPO; // Add this line
 
   @override
   void initState() {
     super.initState();
     maxPicks = ApiService().maxPicks(widget.tournament.id);
+    divisions =
+        ApiService().getFantasyTournamentDivisions(widget.tournament.id);
+    loadPicks(); // Call the new method here
+  }
+
+  void loadPicks() {
     ApiService()
-        .getUserPicks(widget.tournament.id, widget.userId)
+        .getUserPicks(widget.tournament.id, widget.userId, selectedDivision)
         .then((fPicks) {
       setState(() {
         picks = fPicks.picks;
@@ -45,10 +53,12 @@ class _UserPicksPageState extends State<UserPicksPage> {
 
   Future<void> _addNewPick() async {
     String errorMessage = '';
+    int newSlot = picks.length + 1;
+    TextEditingController pdgaController = TextEditingController();
+
     showDialog(
       context: context,
-      barrierDismissible:
-          false, // Prevents the dialog from closing on outside touch
+      barrierDismissible: false,
       builder: (BuildContext context) {
         TextEditingController pdgaController = TextEditingController();
         return StatefulBuilder(
@@ -96,9 +106,9 @@ class _UserPicksPageState extends State<UserPicksPage> {
                     int newSlot = picks.length + 1;
                     int newPdgaNumber = int.parse(pdgaController.text);
                     try {
+                      await ApiService().pickPlayer(widget.tournament.id,
+                          newSlot, newPdgaNumber, selectedDivision);
                       Navigator.of(context).pop();
-                      await ApiService().pickPlayer(
-                          widget.tournament.id, newSlot, newPdgaNumber);
                       Pick newPick = await ApiService().getPick(
                           widget.tournament.id, newSlot, widget.userId);
                       setState(() {
@@ -136,123 +146,182 @@ class _UserPicksPageState extends State<UserPicksPage> {
       future: maxPicks,
       builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return const Center(
+            child: SizedBox(
+              width: 50,
+              height: 50,
+              child: CircularProgressIndicator(
+                strokeCap: StrokeCap.round,
+              ),
+            ),
+          );
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else {
-          // Fill the picks list with empty picks until it's full
+          int maxPicks = snapshot.data!;
+          return FutureBuilder<List<Division>>(
+              future: divisions,
+              builder: (BuildContext context,
+                  AsyncSnapshot<List<Division>> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else {
+                  List<Division> divisions = snapshot.data!;
+                  print(divisions);
+                  double screenWidth = MediaQuery.of(context).size.width;
+                  return Scaffold(
+                    appBar: AppBar(
+                      title: Text("Player picks by: \"${widget.username}\""),
+                    ),
+                    body: SizedBox(
+                      width:
+                          screenWidth > 1000 ? screenWidth * 0.15 : screenWidth,
+                      child: isOwner
+                          ? ReorderableListView.builder(
+                              itemCount: picks.length,
+                              itemBuilder: (context, index) {
+                                return ListTile(
+                                  key: Key(picks[index].slot.toString() +
+                                      selectedDivision.toString() +
+                                      index.toString()),
+                                  leading: Text("${index + 1}:",
+                                      style: const TextStyle(fontSize: 24)),
+                                  title: Text(picks[index].name),
+                                  subtitle: TextField(
+                                    controller: TextEditingController(
+                                        text:
+                                            picks[index].pdgaNumber.toString()),
+                                    keyboardType: TextInputType.number,
+                                    onSubmitted: (value) {
+                                      setState(() {
+                                        picks[index].pdgaNumber =
+                                            int.parse(value);
+                                      });
+                                    },
+                                  ),
+                                  trailing: screenWidth > 600
+                                      ? null
+                                      : ReorderableDragStartListener(
+                                          index: index,
+                                          child: const Icon(Icons.drag_handle),
+                                        ),
+                                );
+                              },
+                              onReorder: (oldIndex, newIndex) {
+                                print("hello");
+                                setState(() {
+                                  if (oldIndex < newIndex) {
+                                    newIndex -= 1;
+                                  }
+                                  final Pick item = picks.removeAt(oldIndex);
+                                  picks.insert(newIndex, item);
 
-          double screenWidth = MediaQuery.of(context).size.width;
-          return Scaffold(
-            appBar: AppBar(
-              title: Text("Player picks by: \"${widget.username}\""),
-            ),
-            body: SizedBox(
-              width:
-                  screenWidth > 1000 ? screenWidth * 0.15 : screenWidth * 0.8,
-              child: isOwner
-                  ? ReorderableListView.builder(
-                      itemCount: picks.length,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          key: Key(picks[index].slot.toString()),
-                          leading: Text("${index + 1}:",
-                              style: const TextStyle(fontSize: 24)),
-                          title: Text(picks[index].name),
-                          subtitle: TextField(
-                            controller: TextEditingController(
-                                text: picks[index].pdgaNumber.toString()),
-                            keyboardType: TextInputType.number,
-                            onSubmitted: (value) {
+                                  // Update the slot value of each Pick instance
+                                  for (int i = 0; i < picks.length; i++) {
+                                    picks[i].slot = i + 1;
+                                  }
+                                });
+                              },
+                            )
+                          : ListView.builder(
+                              itemCount: picks.length,
+                              itemBuilder: (context, index) {
+                                return ListTile(
+                                  key: Key(picks[index].slot.toString()),
+                                  leading: Text(("${index + 1}:").toString(),
+                                      style: const TextStyle(fontSize: 24)),
+                                  title: Text(picks[index].name),
+                                  subtitle:
+                                      Text(picks[index].pdgaNumber.toString()),
+                                );
+                              },
+                            ),
+                    ),
+                    floatingActionButton: isOwner
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              IgnorePointer(
+                                ignoring: picks.length >= maxPicks,
+                                child: FloatingActionButton(
+                                  heroTag: "addButton",
+                                  onPressed: () async {
+                                    await _addNewPick();
+                                    setState(() {
+                                      picks.sort(
+                                          (a, b) => a.slot.compareTo(b.slot));
+                                    });
+                                  },
+                                  backgroundColor: picks.length < maxPicks
+                                      ? null
+                                      : Colors.black12,
+                                  tooltip: 'Add New Pick',
+                                  child: const Icon(Icons.add),
+                                ),
+                              ),
+                              const SizedBox(
+                                  width:
+                                      10), // Add some spacing between the buttons
+                              FloatingActionButton(
+                                heroTag: "saveButton",
+                                onPressed: () async {
+                                  try {
+                                    await ApiService().addPicks(
+                                        widget.tournament.id,
+                                        picks,
+                                        selectedDivision);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: const Text(
+                                            'Picks saved successfully'),
+                                        backgroundColor:
+                                            Colors.greenAccent, // success color
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    if (e is DioException) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(e.response?.data),
+                                          backgroundColor:
+                                              Colors.red, // error color
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                                tooltip: 'Save Picks',
+                                child: const Icon(Icons.save),
+                              ),
+                            ],
+                          )
+                        : null,
+                    bottomNavigationBar: divisions.length >= 2
+                        ? BottomNavigationBar(
+                            items: divisions
+                                .map((division) => BottomNavigationBarItem(
+                                      icon: const Icon(Icons.sports_esports),
+                                      label:
+                                          division.toString().split(".").last,
+                                    ))
+                                .toList(),
+                            currentIndex: divisions.indexOf(selectedDivision),
+                            onTap: (index) {
                               setState(() {
-                                picks[index].pdgaNumber = int.parse(value);
+                                selectedDivision = divisions[index];
+                                loadPicks();
                               });
                             },
-                          ),
-                          trailing: screenWidth > 600
-                              ? null
-                              : ReorderableDragStartListener(
-                                  child: Icon(Icons.drag_handle),
-                                  index: index,
-                                ),
-                        );
-                      },
-                      onReorder: (oldIndex, newIndex) {
-                        print("hello");
-                        setState(() {
-                          if (oldIndex < newIndex) {
-                            newIndex -= 1;
-                          }
-                          final Pick item = picks.removeAt(oldIndex);
-                          picks.insert(newIndex, item);
-
-                          // Update the slot value of each Pick instance
-                          for (int i = 0; i < picks.length; i++) {
-                            picks[i].slot = i + 1;
-                          }
-                        });
-                      },
-                    )
-                  : ListView.builder(
-                      itemCount: picks.length,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          key: Key(picks[index].slot.toString()),
-                          leading: Text(("${index + 1}:").toString(),
-                              style: const TextStyle(fontSize: 24)),
-                          title: Text(picks[index].name),
-                          subtitle: Text(picks[index].pdgaNumber.toString()),
-                        );
-                      },
-                    ),
-            ),
-            floatingActionButton: isOwner
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: <Widget>[
-                      IgnorePointer(
-                        ignoring: picks.length >= snapshot.data!,
-                        child: FloatingActionButton(
-                          heroTag: "addButton",
-                          onPressed: () async {
-                            await _addNewPick();
-                            setState(() {
-                              picks.sort((a, b) => a.slot.compareTo(b.slot));
-                            });
-                          },
-                          backgroundColor: picks.length < snapshot.data!
-                              ? null
-                              : Colors.black12,
-                          tooltip: 'Add New Pick',
-                          child: const Icon(Icons.add),
-                        ),
-                      ),
-                      const SizedBox(
-                          width: 10), // Add some spacing between the buttons
-                      FloatingActionButton(
-                        heroTag: "saveButton",
-                        onPressed: () async {
-                          try {
-                            await ApiService()
-                                .addPicks(widget.tournament.id, picks);
-                          } catch (e) {
-                            if (e is DioException) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(e.response?.data),
-                                  backgroundColor: Colors.red, // error color
-                                ),
-                              );
-                            }
-                          }
-                        },
-                        tooltip: 'Save Picks',
-                        child: const Icon(Icons.save),
-                      ),
-                    ],
-                  )
-                : null,
-          );
+                          )
+                        : null,
+                  );
+                }
+              });
         }
       },
     );

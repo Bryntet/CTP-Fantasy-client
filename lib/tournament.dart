@@ -37,7 +37,20 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
     return FutureBuilder<FantasyTournament>(
       future: tournament,
       builder: (context, snapshot) {
-        if (snapshot.hasData) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: SizedBox(
+              width: 50,
+              height: 50,
+              child: CircularProgressIndicator(
+                strokeCap: StrokeCap.round,
+              ),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          print(snapshot.error);
+          return Text("${snapshot.error}");
+        } else {
           FantasyTournament tournament = snapshot.data!;
           return Scaffold(
             appBar: AppBar(
@@ -46,11 +59,7 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
             body: buildParticipantsFutureBuilder(tournament),
             floatingActionButton: buildOwnerActionButton(tournament),
           );
-        } else if (snapshot.hasError) {
-          print(snapshot.error);
-          return Text("${snapshot.error}");
         }
-        return const CircularProgressIndicator();
       },
     );
   }
@@ -67,7 +76,15 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
         } else if (snapshot.hasError) {
           return Text("${snapshot.error}");
         }
-        return const CircularProgressIndicator();
+        return const Center(
+          child: SizedBox(
+            width: 50,
+            height: 50,
+            child: CircularProgressIndicator(
+              strokeCap: StrokeCap.round,
+            ),
+          ),
+        );
       },
     );
   }
@@ -89,6 +106,10 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
                     userId: participants[index].id,
                     username: participants[index].name,
                   ),
+                  settings: RouteSettings(
+                    name:
+                        '/tournament/${tournament.id}/user/${participants[index].id}/picks',
+                  ),
                 ),
               );
             });
@@ -101,7 +122,15 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
         future: ApiService().getUserId(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();
+            return const Center(
+              child: SizedBox(
+                width: 50,
+                height: 50,
+                child: CircularProgressIndicator(
+                  strokeCap: StrokeCap.round,
+                ),
+              ),
+            );
           }
           if (snapshot.hasError) {
             print(snapshot.error);
@@ -158,7 +187,7 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
                 );
                 Navigator.pop(context); // Close the dialog
               } catch (e) {
-                if (e is DioError) {
+                if (e is DioException) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(e.response?.data),

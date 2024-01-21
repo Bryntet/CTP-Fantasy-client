@@ -142,9 +142,10 @@ class ApiService {
     );
   }
 
-  Future<void> pickPlayer(int tournamentId, int slot, int pdgaNumber) async {
+  Future<void> pickPlayer(
+      int tournamentId, int slot, int pdgaNumber, Division div) async {
     await _dio.put(
-        '$url/fantasy-tournament/$tournamentId/user/${await getUserId()}/picks/$slot/$pdgaNumber');
+        '$url/fantasy-tournament/$tournamentId/user/${await getUserId()}/picks/div/${div.toString().split(".").last}/$slot/$pdgaNumber');
   }
 
   Future<Pick> getPick(int tournamentId, int slot, int userId) async {
@@ -155,9 +156,9 @@ class ApiService {
     return Pick.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<Picks> getUserPicks(int tournamentId, int userId) async {
+  Future<Picks> getUserPicks(int tournamentId, int userId, Division div) async {
     final response = await _dio.get(
-      '$url/fantasy-tournament/$tournamentId/user/$userId/picks',
+      '$url/fantasy-tournament/$tournamentId/user/$userId/picks/div/${div.toString().split('.').last}',
     );
 
     return Picks.fromJson(response.data as Map<String, dynamic>);
@@ -184,9 +185,10 @@ class ApiService {
     );
   }
 
-  Future<void> addPicks(int tournamentId, List<Pick> picks) async {
+  Future<void> addPicks(
+      int tournamentId, List<Pick> picks, Division div) async {
     await _dio.post(
-      '$url/fantasy-tournament/$tournamentId/user/${await getUserId()}/picks',
+      '$url/fantasy-tournament/$tournamentId/user/${await getUserId()}/picks/div/${div.toString().split(".").last}',
       options: Options(contentType: Headers.jsonContentType),
       data: jsonEncode(picks),
     );
@@ -197,5 +199,14 @@ class ApiService {
       '$url/fantasy-tournament/$tournamentId/max-picks',
     );
     return response.data;
+  }
+
+  Future<List<Division>> getFantasyTournamentDivisions(int id) async {
+    final response = await _dio.get('$url/fantasy-tournament/$id/divisions');
+
+    List<Division> divisions = (response.data as List<dynamic>)
+        .map((item) => DivisionExtension.fromJson(item as String))
+        .toList();
+    return divisions;
   }
 }

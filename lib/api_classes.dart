@@ -1,12 +1,16 @@
 class FantasyTournamentInput {
   String name;
   int? maxPicksPerUser;
+  List<Division> divisions;
 
-  FantasyTournamentInput({required this.name, this.maxPicksPerUser});
+  FantasyTournamentInput(
+      {required this.name, this.maxPicksPerUser, required this.divisions});
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['name'] = name;
+    data['divisions'] =
+        divisions.map((e) => e.toString().split('.').last).toList();
     if (maxPicksPerUser != null) {
       data['max_picks_per_user'] = maxPicksPerUser;
     }
@@ -104,5 +108,20 @@ class Picks {
       owner: json['owner'] as bool,
       fantasyTournamentId: json['fantasy_tournament_id'] as int,
     );
+  }
+}
+
+enum Division { MPO, FPO }
+
+extension DivisionExtension on Division {
+  static Division fromJson(String key) {
+    switch (key) {
+      case 'MPO':
+        return Division.MPO;
+      case 'FPO':
+        return Division.FPO;
+      default:
+        throw Exception('Unknown division');
+    }
   }
 }

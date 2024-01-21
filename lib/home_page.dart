@@ -4,7 +4,7 @@ import 'api.dart';
 import 'logged_in.dart'; // Import the HomePage widget
 
 class CombinedLoginScreen extends StatefulWidget {
-  const CombinedLoginScreen({Key? key}) : super(key: key);
+  const CombinedLoginScreen({super.key});
 
   @override
   _CombinedLoginScreenState createState() => _CombinedLoginScreenState();
@@ -117,7 +117,15 @@ class _CombinedLoginScreenState extends State<CombinedLoginScreen> {
       future: future,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
+          return const Center(
+            child: SizedBox(
+              width: 50,
+              height: 50,
+              child: CircularProgressIndicator(
+                strokeCap: StrokeCap.round,
+              ),
+            ),
+          );
         } else if (snapshot.hasError) {
           try {
             throw Exception(snapshot.error);
