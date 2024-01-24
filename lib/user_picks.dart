@@ -165,7 +165,13 @@ class _UserPicksPageState extends State<UserPicksPage> {
                   AsyncSnapshot<List<Division>> snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                    child: CircularProgressIndicator(),
+                    child: SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: CircularProgressIndicator(
+                        strokeCap: StrokeCap.round,
+                      ),
+                    ),
                   );
                 } else if (snapshot.hasError) {
                   return Text('Error: ${snapshot.error}');

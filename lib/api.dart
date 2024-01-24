@@ -11,7 +11,7 @@ import 'api_classes.dart';
 class ApiService {
   static final ApiService _instance = ApiService._internal();
   final Dio _dio;
-  final url = "http://158.174.76.100:50123/api";
+  final url = "http://127.0.0.1:8000/api";
   final SharedPrefCookieStore _cookieStore = SharedPrefCookieStore();
 
   List<Cookie> cookies = [];
@@ -208,5 +208,13 @@ class ApiService {
         .map((item) => DivisionExtension.fromJson(item as String))
         .toList();
     return divisions;
+  }
+
+  Future<String?> addCompetitionToFantasyTournament(
+      int fantasyTournamentId, int competitionId) async {
+    var res = await _dio.post(
+      '$url/fantasy-tournament/$fantasyTournamentId/add-competition/$competitionId',
+    );
+    return res.statusMessage;
   }
 }

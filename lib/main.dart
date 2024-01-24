@@ -50,7 +50,7 @@ class MyApp extends StatelessWidget {
 
         return MaterialApp(
           title: 'Front Page',
-          themeMode: ThemeMode.system,
+          themeMode: ThemeMode.dark,
           theme: ThemeData.from(colorScheme: lightColorScheme),
           darkTheme: ThemeData.from(colorScheme: darkColorScheme),
           onGenerateRoute: (settings) {
