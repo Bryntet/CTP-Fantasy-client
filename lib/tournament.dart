@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:rusty_chains/user_picks.dart';
 
 import 'api.dart';
@@ -20,6 +21,7 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
   final _formKey = GlobalKey<FormState>();
   final _userIdController = TextEditingController();
   final _addCompetitionController = TextEditingController(); // Add this line
+  Future? addCompetitionFuture; // Add this line
   String _errorMessage = '';
 
   @override
@@ -224,143 +226,140 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
   }
 
   AlertDialog buildAddCompetitionDialog() {
+    // Define a variable to hold the selected level
+    CompetitionLevel? selectedLevel;
+
     return AlertDialog(
       title: const Text('Add Competition'),
       content: StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
-          String errorMessage = '';
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              if (errorMessage
-                  .isNotEmpty) // Display error message if it's not empty
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      'ERROR: ',
-                      style: TextStyle(
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
-                          fontSize: errorMessage.split('\n').length * 16.0),
-                    ),
-                    Text(
-                      errorMessage,
-                      style: const TextStyle(
-                        color: Colors.red,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
+          return Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                FormBuilderTextField(
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  controller: _addCompetitionController,
+                  decoration:
+                      const InputDecoration(labelText: 'Competition ID'),
+                  validator: (value) {
+                    if (value == null) {
+                      return 'Please enter the competition ID';
+                    } else if (int.tryParse(value) == null) {
+                      return 'Please enter a valid number';
+                    }
+                    return null;
+                  },
+                  keyboardType: TextInputType.number,
+                  name: 'Competition ID',
                 ),
-              TextFormField(
-                controller: _addCompetitionController,
-                decoration: const InputDecoration(labelText: 'Competition ID'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the competition ID';
-                  }
-                  return null;
-                },
-                keyboardType: TextInputType.number,
-              ),
-            ],
+                FormBuilderDropdown<CompetitionLevel>(
+                  name: 'level',
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  decoration: const InputDecoration(
+                    labelText: 'Level',
+                    hintText: 'Select Level',
+                  ),
+                  validator: (value) {
+                    if (value == null) {
+                      return 'Please select a level';
+                    }
+                    return null;
+                  },
+                  items: CompetitionLevel.values
+                      .map((level) => DropdownMenuItem(
+                            value: level,
+                            child: Text(level.name),
+                          ))
+                      .toList(),
+                  onChanged: (CompetitionLevel? newValue) {
+                    setState(() {
+                      selectedLevel = newValue;
+                    });
+                  },
+                ),
+              ],
+            ),
           );
         },
       ),
       actions: <Widget>[
         TextButton(
           child: const Text('Add'),
-          onPressed: () {
-            if (_addCompetitionController.text.isNotEmpty) {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return FutureBuilder<String?>(
-                    future: ApiService().addCompetitionToFantasyTournament(
-                        widget.id,
-                        int.parse(_addCompetitionController.value.text)),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(
-                          child: SizedBox(
-                            width: 50,
-                            height: 50,
-                            child: CircularProgressIndicator(
-                              strokeCap: StrokeCap.round,
-                            ),
-                          ),
-                        );
-                      } else if (snapshot.hasError) {
-                        if (snapshot.error is DioException) {
-                          var res = (snapshot.error as DioException)
-                              .response
-                              ?.statusMessage;
-                          return AlertDialog(
-                            title: Text(
-                              'ERROR: ',
-                              style: TextStyle(
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: res!.split('\n').length * 16.0),
-                            ),
-                            content: Text(
-                              'Error: ${res ?? 'Unknown error'}',
-                              style: const TextStyle(
-                                color: Colors.red,
-                                fontSize: 16,
-                              ),
-                            ),
-                            actions: <Widget>[
-                              TextButton(
-                                child: const Text('OK'),
-                                onPressed: () {
-                                  Navigator.of(context)
-                                      .pop(); // Close the inner dialog
-                                },
-                              ),
-                            ],
-                          );
-                        } else {
-                          return AlertDialog(
-                            title: Text(
-                              'ERROR: ',
-                              style: TextStyle(
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize:
-                                      _errorMessage.split('\n').length * 16.0),
-                            ),
-                            content: Text(
-                              _errorMessage,
-                              style: const TextStyle(
-                                color: Colors.red,
-                                fontSize: 16,
-                              ),
-                            ),
-                            actions: <Widget>[
-                              TextButton(
-                                child: const Text('OK'),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                              ),
-                            ],
-                          );
-                        }
-                      } else if (snapshot.hasData) {
-                        Navigator.of(context).pop();
-                        return Container();
-                      }
-                      return Container();
-                    },
-                  );
-                },
+          onPressed: () async {
+            if (_formKey.currentState!.validate()) {
+              int fantasyTournamentId = widget.id;
+              int compId = int.parse(_addCompetitionController.text);
+              CompetitionLevel level = selectedLevel!;
+
+              // Create an instance of AddCompetition
+              AddCompetition comp = AddCompetition(
+                competitionId: compId,
+                level: level,
               );
+              try {
+                // Assign the API call to the Future variable and await it
+                setState(() {
+                  addCompetitionFuture =
+                      ApiService().addCompetitionToFantasyTournament(
+                    fantasyTournamentId,
+                    comp,
+                  );
+                });
+                buildAddCompetitionFutureBuilder();
+
+                // If the API call was successful, close the dialog
+                Navigator.pop(context);
+              } catch (e) {
+                if (e is DioException) {
+                  _errorMessage = e.response?.data;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error: ${e.response?.data}'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+                // If an error occurred, show a SnackBar with the error message
+              }
             }
           },
         ),
       ],
+    );
+  }
+
+  FutureBuilder buildAddCompetitionFutureBuilder() {
+    return FutureBuilder(
+      future: addCompetitionFuture, // Use the Future variable here
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: SizedBox(
+              width: 50,
+              height: 50,
+              child: CircularProgressIndicator(
+                strokeCap: StrokeCap.round,
+              ),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          if (snapshot.error is DioException) {
+            _errorMessage = (snapshot.error as DioException).response?.data;
+          }
+        } else if (snapshot.connectionState == ConnectionState.done) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Competition added successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          return Text('Result: ${snapshot.data}');
+        }
+        // Return an empty Container when the Future is not yet called
+        return Container();
+      },
     );
   }
 }

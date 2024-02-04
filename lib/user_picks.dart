@@ -194,8 +194,13 @@ class _UserPicksPageState extends State<UserPicksPage> {
                                   key: Key(picks[index].slot.toString() +
                                       selectedDivision.toString() +
                                       index.toString()),
-                                  leading: Text("${index + 1}:",
-                                      style: const TextStyle(fontSize: 24)),
+                                  leading: picks[index].avatar != null
+                                      ? CircleAvatar(
+                                          backgroundImage: NetworkImage(
+                                              picks[index].avatar!),
+                                        )
+                                      : Text("${index + 1}:",
+                                          style: const TextStyle(fontSize: 24)),
                                   title: Text(picks[index].name),
                                   subtitle: TextField(
                                     controller: TextEditingController(
@@ -237,9 +242,16 @@ class _UserPicksPageState extends State<UserPicksPage> {
                               itemCount: picks.length,
                               itemBuilder: (context, index) {
                                 return ListTile(
-                                  key: Key(picks[index].slot.toString()),
-                                  leading: Text(("${index + 1}:").toString(),
-                                      style: const TextStyle(fontSize: 24)),
+                                  key: Key(picks[index].slot.toString() +
+                                      selectedDivision.toString() +
+                                      index.toString()),
+                                  leading: picks[index].avatar != null
+                                      ? CircleAvatar(
+                                          backgroundImage: NetworkImage(
+                                              picks[index].avatar!),
+                                        )
+                                      : Text("${index + 1}:",
+                                          style: const TextStyle(fontSize: 24)),
                                   title: Text(picks[index].name),
                                   subtitle:
                                       Text(picks[index].pdgaNumber.toString()),
@@ -314,6 +326,7 @@ class _UserPicksPageState extends State<UserPicksPage> {
                                       icon: const Icon(Icons.sports_esports),
                                       label:
                                           division.toString().split(".").last,
+                                      //backgroundColor:
                                     ))
                                 .toList(),
                             currentIndex: divisions.indexOf(selectedDivision),

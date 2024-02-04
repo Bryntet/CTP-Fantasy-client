@@ -11,7 +11,7 @@ void main() {
   runApp(MyApp());
 }
 
-const _brandBlue = Color(0xFF1E88E5);
+const _brandBlue = Color(0xFFFF9400);
 
 class MyApp extends StatelessWidget {
   final _apiService = ApiService();
@@ -51,8 +51,10 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           title: 'Front Page',
           themeMode: ThemeMode.dark,
-          theme: ThemeData.from(colorScheme: lightColorScheme),
-          darkTheme: ThemeData.from(colorScheme: darkColorScheme),
+          theme:
+              ThemeData.from(colorScheme: lightColorScheme, useMaterial3: true),
+          darkTheme:
+              ThemeData.from(colorScheme: darkColorScheme, useMaterial3: true),
           onGenerateRoute: (settings) {
             print('Attempting to generate route for URL: ${settings.name}');
             final Uri uri = Uri.parse(settings.name!);

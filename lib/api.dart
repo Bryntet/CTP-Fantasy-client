@@ -11,7 +11,11 @@ import 'api_classes.dart';
 class ApiService {
   static final ApiService _instance = ApiService._internal();
   final Dio _dio;
-  final url = "http://127.0.0.1:8000/api";
+  final url = {
+    kReleaseMode
+        ? 'https://fantasy.edvinbryntesson.se/api'
+        : 'http://localhost:8000/api'
+  }.first;
   final SharedPrefCookieStore _cookieStore = SharedPrefCookieStore();
 
   List<Cookie> cookies = [];
@@ -211,9 +215,13 @@ class ApiService {
   }
 
   Future<String?> addCompetitionToFantasyTournament(
-      int fantasyTournamentId, int competitionId) async {
+      int fantasyTournamentId, AddCompetition comp) async {
     var res = await _dio.post(
-      '$url/fantasy-tournament/$fantasyTournamentId/add-competition/$competitionId',
+      '$url/fantasy-tournament/$fantasyTournamentId/competition/add',
+      options: Options(
+          contentType: Headers.jsonContentType,
+          responseType: ResponseType.json),
+      data: comp.toJson(),
     );
     return res.statusMessage;
   }

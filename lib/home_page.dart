@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import 'api.dart';
@@ -127,12 +128,21 @@ class _CombinedLoginScreenState extends State<CombinedLoginScreen> {
             ),
           );
         } else if (snapshot.hasError) {
-          try {
-            throw Exception(snapshot.error);
-          } catch (e) {
-            //print(e);
-          }
-          return Container();
+          Navigator.pop(context);
+          String? errorMessage = (snapshot.error is DioException)
+              ? (snapshot.error as DioException).response?.data
+              : snapshot.error.toString();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  errorMessage ?? 'Unknown error occurred',
+                ),
+                duration: const Duration(seconds: 5),
+                backgroundColor: Colors.red,
+              ),
+            );
+          });
         } else if (snapshot.data != null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             Navigator.pushReplacement(

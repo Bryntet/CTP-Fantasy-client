@@ -66,14 +66,20 @@ class Pick {
   int slot;
   int pdgaNumber;
   String name;
+  String? avatar;
 
-  Pick({required this.slot, required this.pdgaNumber, required this.name});
+  Pick(
+      {required this.slot,
+      required this.pdgaNumber,
+      required this.name,
+      this.avatar});
 
   factory Pick.fromJson(Map<String, dynamic> json) {
     return Pick(
         slot: json['slot'] as int,
         pdgaNumber: json['pdga_number'] as int,
-        name: json['name']);
+        name: json['name'],
+        avatar: json['avatar']);
   }
 
   Map<String, dynamic> toJson() {
@@ -81,6 +87,7 @@ class Pick {
       'slot': slot,
       'pdga_number': pdgaNumber,
       'name': name,
+      //'avatar': avatar
     };
   }
 
@@ -123,5 +130,40 @@ extension DivisionExtension on Division {
       default:
         throw Exception('Unknown division');
     }
+  }
+}
+
+enum CompetitionLevel { major, playOff, elitePlus, elite, silver }
+
+extension CompetitionLevelExtension on CompetitionLevel {
+  String get name {
+    switch (this) {
+      case CompetitionLevel.major:
+        return 'Major';
+      case CompetitionLevel.playOff:
+        return 'Playoff';
+      case CompetitionLevel.elitePlus:
+        return 'Elite+';
+      case CompetitionLevel.elite:
+        return 'Elite';
+      case CompetitionLevel.silver:
+        return 'Silver';
+      default:
+        return 'unknown';
+    }
+  }
+}
+
+class AddCompetition {
+  CompetitionLevel level;
+  int competitionId;
+
+  AddCompetition({required this.level, required this.competitionId});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'level': level.name,
+      'competition_id': competitionId,
+    };
   }
 }

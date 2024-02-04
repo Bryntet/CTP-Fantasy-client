@@ -231,22 +231,24 @@ class _TournamentsPageState extends State<TournamentsPage> {
                   },
                 ),
                 DropDownMultiSelect(
-                  onChanged: (List<String> selected) {
-                    setState(() {
-                      selectedDivisions = selected
-                          .map((e) => Division.values.firstWhere((element) =>
-                              element.toString().split('.').last == e))
-                          .toList();
-                    });
-                  },
-                  options: Division.values
-                      .map((e) => e.toString().split('.').last)
-                      .toList(),
-                  selectedValues: selectedDivisions
-                      .map((e) => e.toString().split('.').last)
-                      .toList(),
-                  whenEmpty: 'Select Divisions',
-                ),
+                    onChanged: (List<String> selected) {
+                      setState(() {
+                        selectedDivisions = selected
+                            .map((e) => Division.values.firstWhere((element) =>
+                                element.toString().split('.').last == e))
+                            .toList();
+                      });
+                    },
+                    options: Division.values
+                        .map((e) => e.toString().split('.').last)
+                        .toList(),
+                    selectedValues: selectedDivisions
+                        .map((e) => e.toString().split('.').last)
+                        .toList(),
+                    isDense: false,
+                    decoration: const InputDecoration(
+                      labelText: 'Divisions',
+                    )),
               ],
             ),
           );
