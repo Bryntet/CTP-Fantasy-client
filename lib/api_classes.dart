@@ -143,7 +143,7 @@ extension CompetitionLevelExtension on CompetitionLevel {
       case CompetitionLevel.playOff:
         return 'Playoff';
       case CompetitionLevel.elitePlus:
-        return 'Elite+';
+        return 'ElitePlus';
       case CompetitionLevel.elite:
         return 'Elite';
       case CompetitionLevel.silver:
