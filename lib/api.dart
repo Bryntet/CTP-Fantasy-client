@@ -12,9 +12,7 @@ class ApiService {
   static final ApiService _instance = ApiService._internal();
   final Dio _dio;
   final url = {
-    kReleaseMode
-        ? 'https://fantasy.edvinbryntesson.se/api'
-        : 'http://localhost:8000/api'
+    kDebugMode ? 'http://localhost:8000/api' : 'https://rustlingchains.com/api'
   }.first;
   final SharedPrefCookieStore _cookieStore = SharedPrefCookieStore();
 
