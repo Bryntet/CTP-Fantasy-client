@@ -27,16 +27,17 @@ class ApiService {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          print('Sending request to ${options.uri}');
+          if (kDebugMode) print('Sending request to ${options.uri}');
           return handler.next(options);
         },
         onResponse: (response, handler) {
-          print('Received response: $response');
+          if (kDebugMode) print('Received response: $response');
           return handler.next(response);
         },
         onError: (DioException error, handler) {
-          print(
-              'Error occurred: ${error.response?.statusCode}: ${error.response?.data}');
+          if (kDebugMode)
+            print(
+                'Error occurred: ${error.response?.statusCode}: ${error.response?.data}');
           return handler.next(error);
         },
       ),
