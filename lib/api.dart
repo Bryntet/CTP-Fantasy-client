@@ -224,4 +224,17 @@ class ApiService {
     );
     return res.statusMessage;
   }
+
+  Future<List<Competition>> getCompetitionsFromFantasyTournament(
+      int fantasyTournamentId) async {
+    final response = await _dio.get(
+      '$url/fantasy-tournament/$fantasyTournamentId/competitions',
+    );
+
+    List<Competition> competitions = (response.data as List<dynamic>)
+        .map((item) => Competition.fromJson(item as Map<String, dynamic>))
+        .toList();
+
+    return competitions;
+  }
 }

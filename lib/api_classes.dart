@@ -167,3 +167,22 @@ class AddCompetition {
     };
   }
 }
+
+class Competition {
+  CompetitionLevel level;
+  int competitionId;
+  String name;
+
+  Competition(
+      {required this.level, required this.competitionId, required this.name});
+  factory Competition.fromJson(Map<String, dynamic> json) {
+    return Competition(
+      level: CompetitionLevel.values.firstWhere(
+        (e) => e.name == json['level'],
+        orElse: () => throw Exception('Invalid competition level'),
+      ),
+      competitionId: json['competition_id'] as int,
+      name: json['name'] as String,
+    );
+  }
+}

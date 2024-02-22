@@ -60,7 +60,7 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
             appBar: AppBar(
               title: Text("Fantasy Tournament: \"${tournament.name}\""),
             ),
-            body: buildParticipantsFutureBuilder(tournament),
+            body: buildTournamentDetailsGrid(tournament),
             floatingActionButton: buildOwnerActionButton(tournament),
           );
         }
@@ -77,6 +77,30 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
           List<Participant> participants = snapshot.data!;
           participants.sort((a, b) => b.score.compareTo(a.score));
           return buildParticipantsListView(participants, tournament);
+        } else if (snapshot.hasError) {
+          return Text("${snapshot.error}");
+        }
+        return const Center(
+          child: SizedBox(
+            width: 50,
+            height: 50,
+            child: CircularProgressIndicator(
+              strokeCap: StrokeCap.round,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  FutureBuilder<List<Competition>> buildCompetitionsFutureBuilder(
+      FantasyTournament tournament) {
+    return FutureBuilder<List<Competition>>(
+      future: ApiService().getCompetitionsFromFantasyTournament(tournament.id),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          List<Competition> competitions = snapshot.data!;
+          return buildCompetitionsListView(competitions);
         } else if (snapshot.hasError) {
           return Text("${snapshot.error}");
         }
@@ -118,6 +142,32 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
               );
             });
       },
+    );
+  }
+
+  ListView buildCompetitionsListView(List<Competition> competitions) {
+    return ListView.builder(
+      itemCount: competitions.length,
+      itemBuilder: (context, index) {
+        return ListTile(
+          title: Text(competitions[index].name),
+          subtitle: Text('Level: ${competitions[index].level.name}'),
+        );
+      },
+    );
+  }
+
+  Widget buildTournamentDetailsGrid(FantasyTournament tournament) {
+    return Row(
+      children: [
+        Expanded(
+          child: buildParticipantsFutureBuilder(tournament),
+        ),
+        Expanded(
+          // Wrap the competition list for proper spacing
+          child: buildCompetitionsFutureBuilder(tournament),
+        ),
+      ],
     );
   }
 
