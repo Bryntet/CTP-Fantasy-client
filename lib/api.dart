@@ -151,9 +151,10 @@ class ApiService {
         '$url/fantasy-tournament/$tournamentId/user/${await getUserId()}/picks/div/${div.toString().split(".").last}/$slot/$pdgaNumber');
   }
 
-  Future<Pick> getPick(int tournamentId, int slot, int userId) async {
+  Future<Pick> getPick(
+      int tournamentId, int slot, int userId, Division div) async {
     final response = await _dio.get(
-      '$url/fantasy-tournament/$tournamentId/user/$userId/picks/$slot',
+      '$url/fantasy-tournament/$tournamentId/user/$userId/picks/div/${div.name}/slot/$slot',
     );
 
     return Pick.fromJson(response.data as Map<String, dynamic>);
@@ -161,7 +162,7 @@ class ApiService {
 
   Future<Picks> getUserPicks(int tournamentId, int userId, Division div) async {
     final response = await _dio.get(
-      '$url/fantasy-tournament/$tournamentId/user/$userId/picks/div/${div.toString().split('.').last}',
+      '$url/fantasy-tournament/$tournamentId/user/$userId/picks/div/${div.name}',
     );
 
     return Picks.fromJson(response.data as Map<String, dynamic>);

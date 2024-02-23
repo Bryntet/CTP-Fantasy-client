@@ -110,7 +110,10 @@ class _UserPicksPageState extends State<UserPicksPage> {
                           newSlot, newPdgaNumber, selectedDivision);
                       Navigator.of(context).pop();
                       Pick newPick = await ApiService().getPick(
-                          widget.tournament.id, newSlot, widget.userId);
+                          widget.tournament.id,
+                          newSlot,
+                          widget.userId,
+                          selectedDivision);
                       setState(() {
                         picks.add(newPick);
                         parentSetState();
