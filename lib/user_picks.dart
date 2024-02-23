@@ -21,6 +21,7 @@ class UserPicksPage extends StatefulWidget {
 
 class _UserPicksPageState extends State<UserPicksPage> {
   List<Pick> picks = [];
+  List<TextEditingController> controllers = []; // Add this line
   bool isOwner = false;
   late Future<int> maxPicks;
   late Future<List<Division>> divisions;
@@ -43,6 +44,12 @@ class _UserPicksPageState extends State<UserPicksPage> {
         picks = fPicks.picks;
         picks.sort((a, b) => a.slot.compareTo(b.slot));
         isOwner = fPicks.owner;
+
+        // Initialize the controllers
+        controllers = List.generate(
+            picks.length,
+            (index) => TextEditingController(
+                text: picks[index].pdgaNumber.toString()));
       });
     });
   }
@@ -206,11 +213,9 @@ class _UserPicksPageState extends State<UserPicksPage> {
                                           style: const TextStyle(fontSize: 24)),
                                   title: Text(picks[index].name),
                                   subtitle: TextField(
-                                    controller: TextEditingController(
-                                        text:
-                                            picks[index].pdgaNumber.toString()),
+                                    controller: controllers[index],
                                     keyboardType: TextInputType.number,
-                                    onSubmitted: (value) {
+                                    onChanged: (value) {
                                       setState(() {
                                         picks[index].pdgaNumber =
                                             int.parse(value);
@@ -226,7 +231,6 @@ class _UserPicksPageState extends State<UserPicksPage> {
                                 );
                               },
                               onReorder: (oldIndex, newIndex) {
-                                print("hello");
                                 setState(() {
                                   if (oldIndex < newIndex) {
                                     newIndex -= 1;
@@ -269,7 +273,7 @@ class _UserPicksPageState extends State<UserPicksPage> {
                               IgnorePointer(
                                 ignoring: picks.length >= maxPicks,
                                 child: FloatingActionButton(
-                                  heroTag: "addButton",
+                                  heroTag: "addPickButton",
                                   onPressed: () async {
                                     await _addNewPick();
                                     setState(() {
@@ -288,7 +292,7 @@ class _UserPicksPageState extends State<UserPicksPage> {
                                   width:
                                       10), // Add some spacing between the buttons
                               FloatingActionButton(
-                                heroTag: "saveButton",
+                                heroTag: "savePickButton",
                                 onPressed: () async {
                                   try {
                                     await ApiService().addPicks(
@@ -296,9 +300,9 @@ class _UserPicksPageState extends State<UserPicksPage> {
                                         picks,
                                         selectedDivision);
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: const Text(
-                                            'Picks saved successfully'),
+                                      const SnackBar(
+                                        content:
+                                            Text('Picks saved successfully'),
                                         backgroundColor:
                                             Colors.greenAccent, // success color
                                       ),

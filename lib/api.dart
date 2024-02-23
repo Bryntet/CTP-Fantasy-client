@@ -197,7 +197,7 @@ class ApiService {
   Future<void> addPicks(
       int tournamentId, List<Pick> picks, Division div) async {
     await _dio.post(
-      '$url/fantasy-tournament/$tournamentId/user/${await getUserId()}/picks/div/${div.toString().split(".").last}',
+      '$url/fantasy-tournament/$tournamentId/user/${await getUserId()}/picks/div/${div.name}',
       options: Options(contentType: Headers.jsonContentType),
       data: jsonEncode(picks),
     );
