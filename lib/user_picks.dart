@@ -204,13 +204,8 @@ class _UserPicksPageState extends State<UserPicksPage> {
                                   key: Key(picks[index].slot.toString() +
                                       selectedDivision.toString() +
                                       index.toString()),
-                                  leading: picks[index].avatar != null
-                                      ? CircleAvatar(
-                                          backgroundImage: NetworkImage(
-                                              picks[index].avatar!),
-                                        )
-                                      : Text("${index + 1}:",
-                                          style: const TextStyle(fontSize: 24)),
+                                  leading: buildPlayerImage(
+                                      picks[index].pdgaNumber, index),
                                   title: Text(picks[index].name),
                                   subtitle: TextField(
                                     controller: controllers[index],
@@ -252,13 +247,8 @@ class _UserPicksPageState extends State<UserPicksPage> {
                                   key: Key(picks[index].slot.toString() +
                                       selectedDivision.toString() +
                                       index.toString()),
-                                  leading: picks[index].avatar != null
-                                      ? CircleAvatar(
-                                          backgroundImage: NetworkImage(
-                                              picks[index].avatar!),
-                                        )
-                                      : Text("${index + 1}:",
-                                          style: const TextStyle(fontSize: 24)),
+                                  leading: buildPlayerImage(
+                                      picks[index].pdgaNumber, index),
                                   title: Text(picks[index].name),
                                   subtitle:
                                       Text(picks[index].pdgaNumber.toString()),
@@ -351,5 +341,33 @@ class _UserPicksPageState extends State<UserPicksPage> {
         }
       },
     );
+  }
+
+  Widget buildPlayerImage(int pdgaNumber, int index) {
+    return CircleAvatar(
+        backgroundImage: Image.network(
+      '${ApiService().url}/player/$pdgaNumber/image', // replace with your actual URL
+      fit: BoxFit.cover,
+      errorBuilder:
+          (BuildContext context, Object exception, StackTrace? stackTrace) {
+        // This is called when the image fails to load
+        return Text("${index + 1}:", style: const TextStyle(fontSize: 24));
+      },
+      loadingBuilder: (BuildContext context, Widget child,
+          ImageChunkEvent? loadingProgress) {
+        if (loadingProgress == null) {
+          return child;
+        }
+        return const Center(
+          child: SizedBox(
+            width: 50,
+            height: 50,
+            child: CircularProgressIndicator(
+              strokeCap: StrokeCap.round,
+            ),
+          ),
+        );
+      },
+    ).image);
   }
 }

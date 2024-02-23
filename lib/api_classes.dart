@@ -66,20 +66,18 @@ class Pick {
   int slot;
   int pdgaNumber;
   String name;
-  String? avatar;
 
-  Pick(
-      {required this.slot,
-      required this.pdgaNumber,
-      required this.name,
-      this.avatar});
+  Pick({
+    required this.slot,
+    required this.pdgaNumber,
+    required this.name,
+  });
 
   factory Pick.fromJson(Map<String, dynamic> json) {
     return Pick(
         slot: json['slot'] as int,
         pdgaNumber: json['pdga_number'] as int,
-        name: json['name'],
-        avatar: json['avatar']);
+        name: json['name']);
   }
 
   Map<String, dynamic> toJson() {
