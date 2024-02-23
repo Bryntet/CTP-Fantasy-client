@@ -87,7 +87,7 @@ class MyApp extends StatelessWidget {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const CircularProgressIndicator();
                   } else {
-                    if (snapshot.data == true) {
+                    if (snapshot.hasData && snapshot.data == true) {
                       return const TournamentsPage();
                     } else {
                       return const CombinedLoginScreen();
