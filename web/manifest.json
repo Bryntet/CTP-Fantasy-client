@@ -1,11 +1,11 @@
 {
-    "name": "rusty_chains",
-    "short_name": "rusty_chains",
+    "name": "Rustling Chains",
+    "short_name": "Rustling Chains",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "A disc-golf fantasy manager made in rust.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
