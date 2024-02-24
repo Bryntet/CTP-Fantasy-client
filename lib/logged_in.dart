@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:multiselect/multiselect.dart';
-import 'package:rusty_chains/home_page.dart';
-import 'package:rusty_chains/tournament.dart';
+import 'package:rustling_chains/home_page.dart';
+import 'package:rustling_chains/tournament.dart';
 
 import 'api.dart';
 import 'api_classes.dart';

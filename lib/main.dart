@@ -1,7 +1,7 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
-import 'package:rusty_chains/home_page.dart';
-import 'package:rusty_chains/tournament.dart';
+import 'package:rustling_chains/home_page.dart';
+import 'package:rustling_chains/tournament.dart';
 
 import 'api.dart';
 import 'logged_in.dart';
@@ -67,7 +67,15 @@ class MyApp extends StatelessWidget {
                   future: _apiService.checkCookie(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const CircularProgressIndicator();
+                      return const Center(
+                        child: SizedBox(
+                          width: 50,
+                          height: 50,
+                          child: CircularProgressIndicator(
+                            strokeCap: StrokeCap.round,
+                          ),
+                        ),
+                      );
                     } else {
                       if (snapshot.data == true) {
                         return TournamentDetailsPage(id: id);
@@ -85,7 +93,15 @@ class MyApp extends StatelessWidget {
                 future: _apiService.checkCookie(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
+                    return const Center(
+                      child: SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: CircularProgressIndicator(
+                          strokeCap: StrokeCap.round,
+                        ),
+                      ),
+                    );
                   } else {
                     if (snapshot.hasData && snapshot.data == true) {
                       return const TournamentsPage();

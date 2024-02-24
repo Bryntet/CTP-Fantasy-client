@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:rusty_chains/user_picks.dart';
+import 'package:rustling_chains/user_picks.dart';
 
 import 'api.dart';
 import 'api_classes.dart';
