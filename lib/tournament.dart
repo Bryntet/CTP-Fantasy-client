@@ -5,6 +5,7 @@ import 'package:rustling_chains/user_picks.dart';
 
 import 'api.dart';
 import 'api_classes.dart';
+import 'competition_scores.dart';
 
 class TournamentDetailsPage extends StatefulWidget {
   final int id;
@@ -17,7 +18,7 @@ class TournamentDetailsPage extends StatefulWidget {
 
 class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
   late Future<FantasyTournament> tournament;
-  late Future<List<Participant>> futureParticipants;
+  late Future<List<UserWithScore>> futureParticipants;
   final _formKey = GlobalKey<FormState>();
   final _userIdController = TextEditingController();
   final _addCompetitionController = TextEditingController(); // Add this line
@@ -68,13 +69,13 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
     );
   }
 
-  FutureBuilder<List<Participant>> buildParticipantsFutureBuilder(
+  FutureBuilder<List<UserWithScore>> buildParticipantsFutureBuilder(
       FantasyTournament tournament) {
-    return FutureBuilder<List<Participant>>(
+    return FutureBuilder<List<UserWithScore>>(
       future: futureParticipants,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          List<Participant> participants = snapshot.data!;
+          List<UserWithScore> participants = snapshot.data!;
           participants.sort((a, b) => b.score.compareTo(a.score));
           return buildParticipantsListView(participants, tournament);
         } else if (snapshot.hasError) {
@@ -118,12 +119,12 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
   }
 
   ListView buildParticipantsListView(
-      List<Participant> participants, FantasyTournament tournament) {
+      List<UserWithScore> participants, FantasyTournament tournament) {
     return ListView.builder(
       itemCount: participants.length,
       itemBuilder: (context, index) {
         return ListTile(
-            title: Text(participants[index].name),
+            title: Text(participants[index].user.name),
             subtitle: Text('Score: ${participants[index].score}'),
             onTap: () {
               Navigator.push(
@@ -131,12 +132,12 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
                 MaterialPageRoute(
                   builder: (context) => UserPicksPage(
                     tournament: tournament,
-                    userId: participants[index].id,
-                    username: participants[index].name,
+                    userId: participants[index].user.id,
+                    username: participants[index].user.name,
                   ),
                   settings: RouteSettings(
                     name:
-                        '/tournament/${tournament.id}/user/${participants[index].id}/picks',
+                        '/tournament/${tournament.id}/user/${participants[index].user.id}/picks',
                   ),
                 ),
               );
@@ -152,6 +153,17 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
         return ListTile(
           title: Text(competitions[index].name),
           subtitle: Text('Level: ${competitions[index].level.name}'),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CompetitionScoresPage(
+                  fantasyTournamentId: widget.id,
+                  competitionId: competitions[index].competitionId,
+                ),
+              ),
+            );
+          },
         );
       },
     );

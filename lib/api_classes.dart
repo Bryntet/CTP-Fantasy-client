@@ -46,17 +46,79 @@ class FantasyTournament {
   }
 }
 
-class Participant {
+class User {
   final int id;
   final String name;
+
+  User({required this.id, required this.name});
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'] as int,
+      name: json['username'] as String,
+    );
+  }
+}
+
+class Player {
+  final int pdgaNumber;
+  final String name;
+
+  Player({required this.pdgaNumber, required this.name});
+
+  factory Player.fromJson(Map<String, dynamic> json) {
+    return Player(
+      pdgaNumber: json['id'] as int,
+      name: json['name'] as String,
+    );
+  }
+}
+
+class PlayerScoreOnCompetition {
+  final Player player;
   final int score;
 
-  Participant({required this.id, required this.name, required this.score});
+  PlayerScoreOnCompetition({required this.player, required this.score});
 
-  factory Participant.fromJson(Map<String, dynamic> json) {
-    return Participant(
-      id: json['id'] as int,
-      name: json['name'] as String,
+  factory PlayerScoreOnCompetition.fromJson(Map<String, dynamic> json) {
+    return PlayerScoreOnCompetition(
+      player: Player.fromJson(json['player'] as Map<String, dynamic>),
+      score: json['score'] as int,
+    );
+  }
+}
+
+class UserCompetitionScore {
+  final User user;
+  final int totalScore;
+  final List<PlayerScoreOnCompetition> scores;
+
+  UserCompetitionScore({
+    required this.user,
+    required this.totalScore,
+    required this.scores,
+  });
+
+  factory UserCompetitionScore.fromJson(Map<String, dynamic> json) {
+    return UserCompetitionScore(
+      user: User.fromJson(json['user']),
+      totalScore: json['total_score'] as int,
+      scores: (json['competition_scores'] as List<dynamic>)
+          .map((item) => PlayerScoreOnCompetition.fromJson(item))
+          .toList(),
+    );
+  }
+}
+
+class UserWithScore {
+  final User user;
+  final int score;
+
+  UserWithScore({required this.user, required this.score});
+
+  factory UserWithScore.fromJson(Map<String, dynamic> json) {
+    return UserWithScore(
+      user: User.fromJson(json['user'] as Map<String, dynamic>),
       score: json['score'] as int,
     );
   }

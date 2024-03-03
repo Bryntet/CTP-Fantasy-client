@@ -120,13 +120,13 @@ class ApiService {
     );
   }
 
-  Future<List<Participant>> getFantasyTournamentParticipants(int id) async {
+  Future<List<UserWithScore>> getFantasyTournamentParticipants(int id) async {
     final response = await _dio.get(
       '$url/fantasy-tournament/$id/users',
     );
 
-    List<Participant> participants = (response.data as List<dynamic>)
-        .map((item) => Participant.fromJson(item as Map<String, dynamic>))
+    List<UserWithScore> participants = (response.data as List<dynamic>)
+        .map((item) => UserWithScore.fromJson(item as Map<String, dynamic>))
         .toList();
 
     return participants;
@@ -242,5 +242,18 @@ class ApiService {
         .toList();
 
     return competitions;
+  }
+
+  Future<List<UserCompetitionScore>> getUserCompetitionScores(
+      int fantasyTournamentId, int competitionId) async {
+    final response = await _dio.get(
+      '$url/fantasy-tournament/$fantasyTournamentId/competition/$competitionId/scores',
+    );
+
+    List<UserCompetitionScore> scores = (response.data as List<dynamic>)
+        .map((item) => UserCompetitionScore.fromJson(item))
+        .toList();
+    print(scores);
+    return scores;
   }
 }
