@@ -52,6 +52,7 @@ class _CompetitionScoresPageState extends State<CompetitionScoresPage> {
             return Text("${snapshot.error}");
           } else {
             List<UserCompetitionScore> scores = snapshot.data!;
+            scores.sort((a, b) => b.totalScore.compareTo(a.totalScore));
             return ListView.builder(
               itemCount: scores.length,
               itemBuilder: (context, index) {
