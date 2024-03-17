@@ -59,8 +59,7 @@ class _CompetitionScoresPageState extends State<CompetitionScoresPage> {
                 return Column(
                   children: [
                     ListTile(
-                      title: Text(
-                          "${scores[index].user.name} - ${scores[index].placement}"),
+                      title: Text(scores[index].user.name),
                       subtitle:
                           Text('Total Score: ${scores[index].totalScore}'),
                     ),
@@ -71,7 +70,7 @@ class _CompetitionScoresPageState extends State<CompetitionScoresPage> {
                       itemBuilder: (context, scoreIndex) {
                         return ListTile(
                           title: Text(
-                              scores[index].scores[scoreIndex].player.name),
+                              '${scores[index].scores[scoreIndex].player.name} - ${scores[index].scores[scoreIndex].placement}'),
                           subtitle: Text(
                               'Score: ${scores[index].scores[scoreIndex].score}'),
                           contentPadding: const EdgeInsets.only(
