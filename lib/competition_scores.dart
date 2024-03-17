@@ -59,7 +59,8 @@ class _CompetitionScoresPageState extends State<CompetitionScoresPage> {
                 return Column(
                   children: [
                     ListTile(
-                      title: Text(scores[index].user.name),
+                      title: Text(
+                          "${scores[index].user.name} - ${scores[index].placement}"),
                       subtitle:
                           Text('Total Score: ${scores[index].totalScore}'),
                     ),

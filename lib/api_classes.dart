@@ -92,11 +92,13 @@ class UserCompetitionScore {
   final User user;
   final int totalScore;
   final List<PlayerScoreOnCompetition> scores;
+  final int placement;
 
   UserCompetitionScore({
     required this.user,
     required this.totalScore,
     required this.scores,
+    required this.placement,
   });
 
   factory UserCompetitionScore.fromJson(Map<String, dynamic> json) {
@@ -106,6 +108,7 @@ class UserCompetitionScore {
       scores: (json['competition_scores'] as List<dynamic>)
           .map((item) => PlayerScoreOnCompetition.fromJson(item))
           .toList(),
+      placement: json['placement'] as int,
     );
   }
 }
