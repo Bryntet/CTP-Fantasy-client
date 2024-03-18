@@ -1,3 +1,5 @@
+import 'dart:async'; // Import Timer
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -19,6 +21,7 @@ class TournamentDetailsPage extends StatefulWidget {
 class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
   late Future<FantasyTournament> tournament;
   late Future<List<UserWithScore>> futureParticipants;
+  late Future<ExchangeWindowInformation> myExchangeWindowInfo;
   final _formKey = GlobalKey<FormState>();
   final _userIdController = TextEditingController();
   final _addCompetitionController = TextEditingController(); // Add this line
@@ -31,6 +34,10 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
     tournament = ApiService().getFantasyTournament(widget.id);
     futureParticipants =
         ApiService().getFantasyTournamentParticipants(widget.id);
+    ApiService().getUserId().then((userId) {
+      myExchangeWindowInfo =
+          ApiService().getExchangeWindowStatus(widget.id, userId);
+    });
   }
 
   @override
@@ -90,6 +97,31 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
             ),
           ),
         );
+      },
+    );
+  }
+
+  FutureBuilder<ExchangeWindowInformation>
+      exchangeWindowInformationFutureBuilder() {
+    return FutureBuilder<ExchangeWindowInformation>(
+      future: myExchangeWindowInfo,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return CountdownBanner(exchangeWindowInformation: snapshot.data!);
+        } else if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: SizedBox(
+              width: 50,
+              height: 50,
+              child: CircularProgressIndicator(
+                strokeCap: StrokeCap.round,
+              ),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return Text("${snapshot.error}");
+        }
+        return const SizedBox.shrink(); // Or some placeholder if necessary
       },
     );
   }
@@ -170,14 +202,27 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
   }
 
   Widget buildTournamentDetailsGrid(FantasyTournament tournament) {
-    return Row(
+    return Column(
       children: [
+        // First, add the countdown banner if applicable
+
+        Row(children: [
+          Expanded(child: exchangeWindowInformationFutureBuilder())
+        ]),
+
+        // Then the rest of your tournament details grid
         Expanded(
-          child: buildParticipantsFutureBuilder(tournament),
-        ),
-        Expanded(
-          // Wrap the competition list for proper spacing
-          child: buildCompetitionsFutureBuilder(tournament),
+          // Wrap the Row with Expanded
+          child: Row(
+            children: [
+              Expanded(
+                child: buildParticipantsFutureBuilder(tournament),
+              ),
+              Expanded(
+                child: buildCompetitionsFutureBuilder(tournament),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -423,5 +468,84 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
         return Container();
       },
     );
+  }
+}
+
+class CountdownBanner extends StatefulWidget {
+  final ExchangeWindowInformation exchangeWindowInformation;
+
+  const CountdownBanner({Key? key, required this.exchangeWindowInformation})
+      : super(key: key);
+
+  @override
+  _CountdownBannerState createState() => _CountdownBannerState();
+}
+
+class _CountdownBannerState extends State<CountdownBanner> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(
+        const Duration(seconds: 1), (Timer t) => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.exchangeWindowInformation.status ==
+        ExchangeWindowStatus.AllowedToExchange) {
+      return Container(
+        padding: const EdgeInsets.all(8),
+        color: Colors.green,
+        child: const Text(
+          'Your trading window is open',
+          style: TextStyle(color: Colors.white),
+        ),
+      );
+    } else if (widget.exchangeWindowInformation.status ==
+        ExchangeWindowStatus.AllowedToReorder) {
+      final Duration remainingTime = widget
+          .exchangeWindowInformation.windowOpensAt!
+          .difference(DateTime.now());
+      if (remainingTime.isNegative) {
+        widget.exchangeWindowInformation.status =
+            ExchangeWindowStatus.AllowedToExchange;
+        return build(context); // Return an empty widget if the time has passed
+      }
+      return Container(
+        padding: const EdgeInsets.all(8),
+        color: Colors.blue,
+        child: Text(
+          'Trading window opens in: ${formatDuration(remainingTime)}',
+          style: const TextStyle(color: Colors.white),
+        ),
+      );
+    } else {
+      return Container(
+        padding: const EdgeInsets.all(8),
+        color: Colors.red,
+        child: const Text(
+          'Ongoing competition, so all trades are closed',
+          style: TextStyle(color: Colors.white),
+        ),
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  String formatDuration(Duration duration) {
+    // Helper function to format Duration to a readable string
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final hours = twoDigits(duration.inHours.remainder(24));
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+    return "$hours:$minutes:$seconds";
   }
 }

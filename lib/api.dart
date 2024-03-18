@@ -256,4 +256,13 @@ class ApiService {
     print(scores);
     return scores;
   }
+
+  Future<ExchangeWindowInformation> getExchangeWindowStatus(
+      int tournamentId, int userId) async {
+    final response = await _dio.get(
+      '$url/fantasy-tournament/$tournamentId/user/$userId/exchange_window',
+    );
+    print(response.data);
+    return ExchangeWindowInformation.fromJson(response.data);
+  }
 }

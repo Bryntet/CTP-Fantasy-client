@@ -187,7 +187,6 @@ class _UserPicksPageState extends State<UserPicksPage> {
                   return Text('Error: ${snapshot.error}');
                 } else {
                   List<Division> divisions = snapshot.data!;
-                  print(divisions);
                   double screenWidth = MediaQuery.of(context).size.width;
                   return Scaffold(
                     appBar: AppBar(

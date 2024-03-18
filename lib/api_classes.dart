@@ -249,3 +249,30 @@ class Competition {
     );
   }
 }
+
+enum ExchangeWindowStatus { AllowedToExchange, AllowedToReorder, Closed }
+
+class ExchangeWindowInformation {
+  late final ExchangeWindowStatus status;
+  final DateTime? windowOpensAt;
+
+  ExchangeWindowInformation({required this.status, this.windowOpensAt});
+
+  factory ExchangeWindowInformation.fromJson(String status) {
+    if (status.contains('AllowedToReorder')) {
+      var json = (status as Map<String, dynamic>);
+      return ExchangeWindowInformation(
+        status: ExchangeWindowStatus.AllowedToReorder,
+        windowOpensAt:
+            DateTime.parse(json['AllowedToReorder']['window_opens_at']),
+      );
+    } else {
+      return ExchangeWindowInformation(
+        status: ExchangeWindowStatus.values.firstWhere(
+          (e) => e.name == status,
+          orElse: () => throw Exception('Invalid exchange window status'),
+        ),
+      );
+    }
+  }
+}
