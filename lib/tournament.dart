@@ -36,7 +36,7 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
     futureParticipants =
         ApiService().getFantasyTournamentParticipants(widget.id);
     myExchangeWindowInfo = ApiService().getUserId().then((userId) {
-      return ApiService().getExchangeWindowStatus(widget.id, 1);
+      return ApiService().getExchangeWindowStatus(widget.id, userId);
     });
   }
 
