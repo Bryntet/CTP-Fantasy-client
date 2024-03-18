@@ -235,9 +235,14 @@ class Competition {
   CompetitionLevel level;
   int competitionId;
   String name;
+  DateTime startDate;
 
-  Competition(
-      {required this.level, required this.competitionId, required this.name});
+  Competition({
+    required this.level,
+    required this.competitionId,
+    required this.name,
+    required this.startDate,
+  });
   factory Competition.fromJson(Map<String, dynamic> json) {
     return Competition(
       level: CompetitionLevel.values.firstWhere(
@@ -246,6 +251,7 @@ class Competition {
       ),
       competitionId: json['competition_id'] as int,
       name: json['name'] as String,
+      startDate: DateTime.parse(json['start_date']),
     );
   }
 }
@@ -258,9 +264,9 @@ class ExchangeWindowInformation {
 
   ExchangeWindowInformation({required this.status, this.windowOpensAt});
 
-  factory ExchangeWindowInformation.fromJson(String status) {
-    if (status.contains('AllowedToReorder')) {
-      var json = (status as Map<String, dynamic>);
+  factory ExchangeWindowInformation.fromJson(dynamic status) {
+    if ((status.toString()).contains('AllowedToReorder')) {
+      Map<String, dynamic> json = status as Map<String, dynamic>;
       return ExchangeWindowInformation(
         status: ExchangeWindowStatus.AllowedToReorder,
         windowOpensAt:
@@ -269,7 +275,7 @@ class ExchangeWindowInformation {
     } else {
       return ExchangeWindowInformation(
         status: ExchangeWindowStatus.values.firstWhere(
-          (e) => e.name == status,
+          (e) => e.name == (status),
           orElse: () => throw Exception('Invalid exchange window status'),
         ),
       );

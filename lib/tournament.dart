@@ -3,6 +3,7 @@ import 'dart:async'; // Import Timer
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:intl/intl.dart';
 import 'package:rustling_chains/user_picks.dart';
 
 import 'api.dart';
@@ -34,9 +35,8 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
     tournament = ApiService().getFantasyTournament(widget.id);
     futureParticipants =
         ApiService().getFantasyTournamentParticipants(widget.id);
-    ApiService().getUserId().then((userId) {
-      myExchangeWindowInfo =
-          ApiService().getExchangeWindowStatus(widget.id, userId);
+    myExchangeWindowInfo = ApiService().getUserId().then((userId) {
+      return ApiService().getExchangeWindowStatus(widget.id, 1);
     });
   }
 
@@ -183,7 +183,8 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
       itemCount: competitions.length,
       itemBuilder: (context, index) {
         return ListTile(
-          title: Text(competitions[index].name),
+          title: Text(
+              "${competitions[index].name} - ${DateFormat('yyyy-MM-dd').format(competitions[index].startDate)}"),
           subtitle: Text('Level: ${competitions[index].level.name}'),
           onTap: () {
             Navigator.push(
