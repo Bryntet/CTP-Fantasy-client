@@ -354,9 +354,6 @@ class _UserPicksPageState extends State<UserPicksPage> {
       },
       loadingBuilder: (BuildContext context, Widget child,
           ImageChunkEvent? loadingProgress) {
-        if (loadingProgress == null) {
-          return child;
-        }
         return const Center(
           child: SizedBox(
             width: 50,
