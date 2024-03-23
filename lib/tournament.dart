@@ -23,6 +23,8 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
   late Future<FantasyTournament> tournament;
   late Future<List<UserWithScore>> futureParticipants;
   late Future<ExchangeWindowInformation> myExchangeWindowInfo;
+  late Future<List<String>> futureTradeLog;
+
   final _formKey = GlobalKey<FormState>();
   final _userIdController = TextEditingController();
   final _addCompetitionController = TextEditingController(); // Add this line
@@ -38,6 +40,7 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
     myExchangeWindowInfo = ApiService().getUserId().then((userId) {
       return ApiService().getExchangeWindowStatus(widget.id, userId);
     });
+    futureTradeLog = ApiService().getTradeLog(widget.id);
   }
 
   @override
@@ -205,15 +208,10 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
   Widget buildTournamentDetailsGrid(FantasyTournament tournament) {
     return Column(
       children: [
-        // First, add the countdown banner if applicable
-
         Row(children: [
           Expanded(child: exchangeWindowInformationFutureBuilder())
         ]),
-
-        // Then the rest of your tournament details grid
         Expanded(
-          // Wrap the Row with Expanded
           child: Row(
             children: [
               Expanded(
@@ -221,6 +219,28 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
               ),
               Expanded(
                 child: buildCompetitionsFutureBuilder(tournament),
+              ),
+              Expanded(
+                child: FutureBuilder<List<String>>(
+                  future: futureTradeLog,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      List<String> tradeLog = snapshot.data!;
+                      return buildTradeLogListView(tradeLog);
+                    } else if (snapshot.hasError) {
+                      return Text("${snapshot.error}");
+                    }
+                    return const Center(
+                      child: SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: CircularProgressIndicator(
+                          strokeCap: StrokeCap.round,
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ],
           ),
@@ -467,6 +487,22 @@ class _TournamentDetailsPageState extends State<TournamentDetailsPage> {
         }
         // Return an empty Container when the Future is not yet called
         return Container();
+      },
+    );
+  }
+
+  ListView buildTradeLogListView(List<String> tradeLog) {
+    return ListView.separated(
+      padding: EdgeInsets.zero, // Remove default ListView padding
+      itemCount: tradeLog.length,
+      itemBuilder: (context, index) {
+        return ListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(tradeLog[index]),
+        );
+      },
+      separatorBuilder: (context, index) {
+        return const Divider(height: 1.0); // Thin separator
       },
     );
   }

@@ -264,4 +264,10 @@ class ApiService {
     );
     return ExchangeWindowInformation.fromJson(response.data);
   }
+
+  Future<List<String>> getTradeLog(int tournamentId) async {
+    final response =
+        await _dio.get('$url/fantasy-tournament/$tournamentId/trade-log');
+    return (response.data as List<dynamic>).cast<String>();
+  }
 }
