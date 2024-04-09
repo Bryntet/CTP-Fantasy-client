@@ -34,9 +34,12 @@ class _CombinedLoginScreenState extends State<CombinedLoginScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: <Widget>[
-            buildTextField(_usernameController, 'Username'),
+            buildTextField(
+                _usernameController, 'Username', AutofillHints.username),
             const SizedBox(height: 16),
-            buildTextField(_passwordController, 'Password', obscureText: true),
+            buildTextField(
+                _passwordController, 'Password', AutofillHints.password,
+                obscureText: true),
             const SizedBox(height: 16),
             Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
               buildRegisterButton(),
@@ -49,7 +52,8 @@ class _CombinedLoginScreenState extends State<CombinedLoginScreen> {
     );
   }
 
-  TextFormField buildTextField(TextEditingController controller, String label,
+  TextFormField buildTextField(
+      TextEditingController controller, String label, String autoFillHint,
       {bool obscureText = false}) {
     return TextFormField(
       controller: controller,
@@ -61,6 +65,7 @@ class _CombinedLoginScreenState extends State<CombinedLoginScreen> {
         }
         return null;
       },
+      autofillHints: [autoFillHint],
     );
   }
 
