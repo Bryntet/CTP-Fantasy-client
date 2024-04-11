@@ -53,12 +53,31 @@ class _CombinedLoginScreenState extends State<CombinedLoginScreen> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: <Widget>[
-              buildTextField(_usernameController, 'Username',
-                  AutofillHints.username.toString()),
+              TextFormField(
+                controller: _usernameController,
+                decoration: const InputDecoration(labelText: "Username"),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your username';
+                  } else if (value.trim() != value) {
+                    return 'Username cannot contain whitespace';
+                  }
+                  return null;
+                },
+                autofillHints: const [AutofillHints.username],
+              ),
               const SizedBox(height: 16),
-              buildTextField(_passwordController, 'Password',
-                  AutofillHints.password.toString(),
-                  obscureText: true),
+              TextFormField(
+                  controller: _passwordController,
+                  decoration: const InputDecoration(labelText: "Password"),
+                  obscureText: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your password';
+                    }
+                    return null;
+                  },
+                  autofillHints: const [AutofillHints.password]),
               const SizedBox(height: 16),
               Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -71,23 +90,6 @@ class _CombinedLoginScreenState extends State<CombinedLoginScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  TextFormField buildTextField(
-      TextEditingController controller, String label, String autoFillHint,
-      {bool obscureText = false}) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(labelText: label),
-      obscureText: obscureText,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter your $label';
-        }
-        return null;
-      },
-      autofillHints: [autoFillHint],
     );
   }
 
