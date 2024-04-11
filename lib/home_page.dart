@@ -34,11 +34,11 @@ class _CombinedLoginScreenState extends State<CombinedLoginScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: <Widget>[
-            buildTextField(
-                _usernameController, 'Username', AutofillHints.username),
+            buildTextField(_usernameController, 'Username',
+                AutofillHints.username.toString()),
             const SizedBox(height: 16),
-            buildTextField(
-                _passwordController, 'Password', AutofillHints.password,
+            buildTextField(_passwordController, 'Password',
+                AutofillHints.password.toString(),
                 obscureText: true),
             const SizedBox(height: 16),
             Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
