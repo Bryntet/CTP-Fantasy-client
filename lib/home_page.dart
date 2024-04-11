@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'api.dart';
 import 'logged_in.dart'; // Import the HomePage widget
@@ -30,23 +31,44 @@ class _CombinedLoginScreenState extends State<CombinedLoginScreen> {
   Form buildLoginForm() {
     return Form(
       key: _sharedFormKey,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: <Widget>[
-            buildTextField(_usernameController, 'Username',
-                AutofillHints.username.toString()),
-            const SizedBox(height: 16),
-            buildTextField(_passwordController, 'Password',
-                AutofillHints.password.toString(),
-                obscureText: true),
-            const SizedBox(height: 16),
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
-              buildRegisterButton(),
-              const SizedBox(width: 16),
-              buildLoginButton()
-            ]),
-          ],
+      child: KeyboardListener(
+        focusNode: FocusNode(),
+        onKeyEvent: (KeyEvent event) {
+          if (event.logicalKey == LogicalKeyboardKey.enter) {
+            if (_sharedFormKey.currentState?.validate() == true) {
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (BuildContext context) {
+                  return Container(
+                    child: buildFutureBuilder(ApiService().loginUser(
+                        _usernameController.text, _passwordController.text)),
+                  );
+                },
+              );
+            }
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: <Widget>[
+              buildTextField(_usernameController, 'Username',
+                  AutofillHints.username.toString()),
+              const SizedBox(height: 16),
+              buildTextField(_passwordController, 'Password',
+                  AutofillHints.password.toString(),
+                  obscureText: true),
+              const SizedBox(height: 16),
+              Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    buildRegisterButton(),
+                    const SizedBox(width: 16),
+                    buildLoginButton()
+                  ]),
+            ],
+          ),
         ),
       ),
     );
