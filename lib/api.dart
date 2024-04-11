@@ -59,7 +59,6 @@ class ApiService {
       var cookieJar = _cookieStore;
       var uri = Uri.parse(url);
       cookies = await cookieJar.loadForRequest(uri);
-      print('Cookies: $cookies');
     }
   }
 
@@ -253,7 +252,6 @@ class ApiService {
     List<UserCompetitionScore> scores = (response.data as List<dynamic>)
         .map((item) => UserCompetitionScore.fromJson(item))
         .toList();
-    print(scores);
     return scores;
   }
 
