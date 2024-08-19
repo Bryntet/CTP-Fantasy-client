@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 
 import 'api.dart';
@@ -49,10 +51,12 @@ class _CompetitionScoresPageState extends State<CompetitionScoresPage> {
               ),
             );
           } else if (snapshot.hasError) {
+            log("${snapshot}");
             return Text("${snapshot.error}");
           } else {
             List<UserCompetitionScore> scores = snapshot.data!;
-            scores.sort((a, b) => b.totalScore.compareTo(a.totalScore));
+            scores.sort(
+                (a, b) => b.scores.total_score.compareTo(a.scores.total_score));
             return ListView.builder(
               itemCount: scores.length,
               itemBuilder: (context, index) {
@@ -60,19 +64,19 @@ class _CompetitionScoresPageState extends State<CompetitionScoresPage> {
                   children: [
                     ListTile(
                       title: Text(scores[index].user.name),
-                      subtitle:
-                          Text('Total Score: ${scores[index].totalScore}'),
+                      subtitle: Text(
+                          'Total Score: ${scores[index].scores.total_score}'),
                     ),
                     ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: scores[index].scores.length,
+                      itemCount: scores[index].scores.player_scores.length,
                       itemBuilder: (context, scoreIndex) {
                         return ListTile(
                           title: Text(
-                              '${scores[index].scores[scoreIndex].player.name} - ${scores[index].scores[scoreIndex].placement}'),
+                              '${scores[index].scores.player_scores[scoreIndex].player.name} - ${scores[index].scores.player_scores[scoreIndex].placement}'),
                           subtitle: Text(
-                              'Score: ${scores[index].scores[scoreIndex].score}'),
+                              'Score: ${scores[index].scores.player_scores[scoreIndex].score}'),
                           contentPadding: const EdgeInsets.only(
                               left: 40), // Indent the player scores
                         );
